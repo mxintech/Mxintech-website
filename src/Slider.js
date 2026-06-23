@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import "./Slider.css";
 import slide1 from "./assets/KCD2026.png";
 import slide2 from "./assets/slide2.jpg";
@@ -10,50 +10,58 @@ import { SiAmazonwebservices } from "react-icons/si";
 const INTERVAL_MS = 20000; // 20 seconds per slide
 const TICK_MS = 100;      // update progress every 100ms
 
-const Slider = () => {
-  const slides = [
-    {
-      id: 1,
-      url: slide1,
-      caption: "Kubernetes Community Day 2026, Guadalajara",
-      icons: [
-        { Icon: FaCalendarAlt, key: "calendar", label: "Calendar" },
-        { Icon: FaMapPin, key: "map-pin", label: "Map Pin" },
-      ],
-    },
-    {
-      id: 2,
-      url: slide2,
-      caption: "Oficialmente Somos un AWS User Group.",
-      icons: [
-        { Icon: FaStar, key: "tada", label: "Celebration" },
-        { Icon: SiAmazonwebservices, key: "aws", label: "AWS" },
-      ],
-    },
-    { id: 3, url: slide3, caption: "1er meetup presencial de la comunidad." },
-    { id: 4, url: slide4, caption: "Webinar: Aprendimos sobre GitOps, ArgoCD, Rollouts y más." },
-  ];
+const SLIDES = [
+  {
+    id: 1,
+    url: slide1,
+    caption: "Kubernetes Community Day 2026, Guadalajara",
+    icons: [
+      { Icon: FaCalendarAlt, key: "calendar", label: "Calendar" },
+      { Icon: FaMapPin, key: "map-pin", label: "Map Pin" },
+    ],
+  },
+  {
+    id: 2,
+    url: slide2,
+    caption: "Oficialmente Somos un AWS User Group.",
+    icons: [
+      { Icon: FaStar, key: "tada", label: "Celebration" },
+      { Icon: SiAmazonwebservices, key: "aws", label: "AWS" },
+    ],
+  },
+  { id: 3, url: slide3, caption: "1er meetup presencial de la comunidad." },
+  { id: 4, url: slide4, caption: "Webinar: Aprendimos sobre GitOps, ArgoCD, Rollouts y más." },
+];
 
+const SLIDE_COUNT = SLIDES.length;
+
+const Slider = () => {
   const [current, setCurrent] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const touchStartRef = useRef(null);
 
-  const nextSlide = () => {
-    setCurrent((prev) => (prev + 1) % slides.length);
-  };
-
-  const prevSlide = () => {
-    setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
-  };
-
-  /* Auto-advance and progress countdown: single interval on mount, no re-run on slide change */
-  useEffect(() => {
+  const goToSlide = useCallback((index) => {
+    setCurrent(index);
     setElapsed(0);
+  }, []);
+
+  const nextSlide = useCallback(() => {
+    setCurrent((prev) => (prev + 1) % SLIDE_COUNT);
+    setElapsed(0);
+  }, []);
+
+  const prevSlide = useCallback(() => {
+    setCurrent((prev) => (prev - 1 + SLIDE_COUNT) % SLIDE_COUNT);
+    setElapsed(0);
+  }, []);
+
+  /* Auto-advance and progress countdown: single interval on mount */
+  useEffect(() => {
     const id = setInterval(() => {
       setElapsed((prev) => {
         const next = prev + TICK_MS;
         if (next >= INTERVAL_MS) {
-          setCurrent((c) => (c + 1) % slides.length);
+          setCurrent((c) => (c + 1) % SLIDE_COUNT);
           return 0;
         }
         return next;
@@ -82,8 +90,8 @@ const Slider = () => {
     <div className="slider-hero">
       <div
         className="slider-frame"
-        key={slides[current].id}
-        style={{ "--slide-image": `url(${slides[current].url})` }}
+        key={SLIDES[current].id}
+        style={{ "--slide-image": `url(${SLIDES[current].url})` }}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         onTouchCancel={() => { touchStartRef.current = null; }}
@@ -92,18 +100,18 @@ const Slider = () => {
       >
         <div className="slider-overlay" />
         <div className="slider-welcome-message">
-          {slides[current].icons && (
+          {SLIDES[current].icons && (
             <div className="slider-caption-icons" aria-hidden>
-              {slides[current].icons.map(({ Icon, key, label }) => (
+              {SLIDES[current].icons.map(({ Icon, key, label }) => (
                 <Icon key={key} className={`slider-icon slider-icon-${key}`} aria-label={label} />
               ))}
             </div>
           )}
-          <p className="caption">{slides[current].caption}</p>
+          <p className="caption">{SLIDES[current].caption}</p>
         </div>
         <div className="slider-controls">
-          <button onClick={prevSlide} className="slider-button" aria-label="Anterior">❮</button>
-          <button onClick={nextSlide} className="slider-button" aria-label="Siguiente">❯</button>
+          <button type="button" onClick={prevSlide} className="slider-button" aria-label="Anterior">❮</button>
+          <button type="button" onClick={nextSlide} className="slider-button" aria-label="Siguiente">❯</button>
         </div>
         <div className="slider-center-group">
           <div className="slider-progress-wrap" aria-label="Tiempo restante para el siguiente slide">
@@ -114,11 +122,12 @@ const Slider = () => {
             />
           </div>
           <div className="slider-dots">
-          {slides.map((slide, idx) => (
+          {SLIDES.map((slide, idx) => (
             <button
               key={slide.id}
+              type="button"
               className={`slider-dot ${idx === current ? 'active' : ''}`}
-              onClick={() => setCurrent(idx)}
+              onClick={() => goToSlide(idx)}
               aria-label={`Ir al slide ${idx + 1}`}
             />
           ))}

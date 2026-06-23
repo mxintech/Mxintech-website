@@ -32,7 +32,8 @@ import {
   FaCircle,
   FaRegCircle,
   FaMoon,
-  FaSun
+  FaSun,
+  FaEnvelope
 } from 'react-icons/fa';
 import { SiMeetup } from 'react-icons/si';
 
@@ -232,11 +233,11 @@ const HomePage = () => {
             </p>
             <div className="hero-actions">
               <Link to="/contact/member" className="hero-button hero-primary">
-                Unete a la comunidad
+                Únete a la comunidad
               </Link>
-              <Link to="/#video" className="hero-button hero-secondary">
+              <a href="/#eventos" className="hero-button hero-secondary">
                 Ver los próximos eventos
-              </Link>
+              </a>
             </div>
           </div>
         </div>
@@ -553,14 +554,21 @@ function App() {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  /* Scroll to hash (e.g. #inicio) when navigating from another route */
+  /* Scroll to hash when navigating to home sections (wait for route render) */
   useEffect(() => {
     if (location.pathname !== '/' || !location.hash) return;
     const id = location.hash.slice(1);
-    const el = id ? document.getElementById(id) : null;
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    const scrollToHash = () => {
+      const el = id ? document.getElementById(id) : null;
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+    requestAnimationFrame(() => requestAnimationFrame(scrollToHash));
+  }, [location.pathname, location.hash]);
+
+  /* Scroll to top when changing non-hash routes (e.g. /cursos, /contact/*) */
+  useEffect(() => {
+    if (location.hash) return;
+    window.scrollTo(0, 0);
   }, [location.pathname, location.hash]);
 
   useEffect(() => {
@@ -619,31 +627,41 @@ function App() {
               {/* Enlaces del menú */}
               <ul className={`nav-links ${menuOpen ? 'open' : ''}`}>
                 <li>
-                  <Link to="/#inicio" onClick={closeMenu} className="nav-link-item">
+                  <a href="/#inicio" onClick={closeMenu} className="nav-link-item">
                     <FaHome className="nav-link-icon" aria-hidden />
                     <span>Inicio</span>
-                  </Link>
+                  </a>
                 </li>
                 <li>
-                  <Link to="/#acercade" onClick={closeMenu} className="nav-link-item">
+                  <a href="/#acercade" onClick={closeMenu} className="nav-link-item">
                     <FaInfoCircle className="nav-link-icon" aria-hidden />
                     <span>Acerca de</span>
-                  </Link>
+                  </a>
                 </li>
                 <li>
-                  <Link to="/#video" onClick={closeMenu} className="nav-link-item">
+                  <a href="/#video" onClick={closeMenu} className="nav-link-item">
                     <FaVideo className="nav-link-icon" aria-hidden />
                     <span>Webinars</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="/#eventos" onClick={closeMenu} className="nav-link-item">
+                    <FaCalendarAlt className="nav-link-icon" aria-hidden />
+                    <span>Eventos</span>
+                  </a>
+                </li>
+                <li>
+                  <Link to="/cursos" onClick={closeMenu} className="nav-link-item">
+                    <FaBook className="nav-link-icon" aria-hidden />
+                    <span>Cursos</span>
                   </Link>
                 </li>
                 <li>
-                  <Link to="/#eventos" onClick={closeMenu} className="nav-link-item">
-                    <FaCalendarAlt className="nav-link-icon" aria-hidden />
-                    <span>Eventos</span>
+                  <Link to="/contact/member" onClick={closeMenu} className="nav-link-item">
+                    <FaEnvelope className="nav-link-icon" aria-hidden />
+                    <span>Contacto</span>
                   </Link>
                 </li>
-                {/*<li><Link to="/cursos" onClick={closeMenu}>Cursos</Link></li>*/}
-                {/*<li><Link to="/contact" onClick={closeMenu}>Contacto</Link></li>*/}
               </ul>
             </div>
           </div>
@@ -818,7 +836,7 @@ function App() {
         </div>
         <div className="footer-bottom">
           <p className="footer-copyright">
-            © Reserved rights 2026. Made by Mexico in Tech.
+            © 2026 Mexico in Tech. Todos los derechos reservados.
           </p>
         </div>
       </footer>

@@ -30,15 +30,23 @@ body[data-theme="dark"] section {
   box-shadow: none !important;
 }
 
-/* Card/box containers inside section grids stay transparent in both themes */
-.acercade-slide-box,
-.info-section,
-.info-card,
-.contact-section,
-.contact-grid,
-.webinar-card,
-.eventos-video-wrap,
-.eventos-card {
+/* Card/box containers: transparent in dark theme so body gradient shows through */
+[data-theme="dark"] .acercade-slide-box,
+body[data-theme="dark"] .acercade-slide-box,
+[data-theme="dark"] .info-section,
+body[data-theme="dark"] .info-section,
+[data-theme="dark"] .info-card,
+body[data-theme="dark"] .info-card,
+[data-theme="dark"] .contact-section,
+body[data-theme="dark"] .contact-section,
+[data-theme="dark"] .contact-grid,
+body[data-theme="dark"] .contact-grid,
+[data-theme="dark"] .webinar-card,
+body[data-theme="dark"] .webinar-card,
+[data-theme="dark"] .eventos-video-wrap,
+body[data-theme="dark"] .eventos-video-wrap,
+[data-theme="dark"] .eventos-card,
+body[data-theme="dark"] .eventos-card {
   background: transparent !important;
   background-color: transparent !important;
   background-image: none !important;
@@ -607,8 +615,9 @@ section.acercade-section {
 }
 
 [data-theme="dark"] .info-section {
-  background-color: rgba(89, 131, 252, 1);
-  background-image: radial-gradient(ellipse at center, rgba(89, 131, 252, 1) 0%, rgba(71, 99, 161, 1) 100%);
+  background: none;
+  background-color: transparent;
+  background-image: none;
 }
 
 .info-cards {
@@ -630,9 +639,8 @@ section.acercade-section {
 }
 
 [data-theme="dark"] .info-card {
-  background-color: rgba(89, 131, 252, 1);
-  background-image: radial-gradient(ellipse at center, rgba(89, 131, 252, 1) 0%, rgba(71, 99, 161, 1) 100%);
-  box-shadow: 0 4px 6px rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: none;
 }
 
 .info-card h3 {
@@ -693,7 +701,8 @@ section.acercade-section {
 }
 
 [data-theme="dark"] .info-card:hover {
-  box-shadow: 0 8px 12px rgba(255, 255, 255, 0.45);
+  box-shadow: none;
+  border-color: rgba(255, 255, 255, 0.35);
 }
 
 /* Formulario de contacto */
@@ -712,8 +721,9 @@ section.contact-section,
 }
 
 [data-theme="dark"] .contact-section {
-  background-color: rgba(89, 131, 252, 1);
-  background-image: radial-gradient(ellipse at center, rgba(89, 131, 252, 1) 0%, rgba(71, 99, 161, 1) 100%);
+  background: none;
+  background-color: transparent;
+  background-image: none;
 }
 
 .contact-grid {
@@ -731,8 +741,7 @@ section.contact-section,
 }
 
 [data-theme="dark"] .contact-grid {
-  background-color: rgba(89, 131, 252, 1);
-  background-image: radial-gradient(ellipse at center, rgba(89, 131, 252, 1) 0%, rgba(71, 99, 161, 1) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: none;
   color: white;
 }
