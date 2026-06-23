@@ -74,6 +74,28 @@ jobs:
             aws cloudformation wait stack-rollback-complete --stack-name mxintech-website
           fi
 
+      - name: Recover stuck contact API stack if needed
+        if: env.STACK == 'contact-api'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! aws cloudformation describe-stacks --stack-name mxintech-contact-api >/dev/null 2>&1; then
+            echo "Stack mxintech-contact-api does not exist yet."
+            exit 0
+          fi
+          status=$(aws cloudformation describe-stacks \
+            --stack-name mxintech-contact-api \
+            --query 'Stacks[0].StackStatus' \
+            --output text)
+          echo "Current contact API stack status: $status"
+          if [[ "$status" == "ROLLBACK_FAILED" || "$status" == "UPDATE_ROLLBACK_FAILED" ]]; then
+            echo "Continuing rollback (skipping Route53 records blocked by prior IAM gaps)..."
+            aws cloudformation continue-update-rollback \
+              --stack-name mxintech-contact-api \
+              --resources-to-skip ApiCloudFrontAliasRecord ApiCloudFrontAliasRecordIpv6
+            aws cloudformation wait stack-rollback-complete --stack-name mxintech-contact-api
+          fi
+
       - name: Deploy website stack
         if: env.STACK == 'website'
         run: |

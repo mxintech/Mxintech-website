@@ -83,12 +83,16 @@ jobs:
 
           for pair in \
             "frontend_bucket:$frontend_bucket" \
-            "distribution_id:$distribution_id"
+            "distribution_id:$distribution_id" \
+            "api_public_url:$api_public_url"
           do
             key="${pair%%:*}"
             value="${pair#*:}"
             if [[ -z "$value" || "$value" == "None" ]]; then
               echo "Unable to resolve required value: $key"
+              if [[ "$key" == "api_public_url" ]]; then
+                echo "Deploy mxintech-contact-api first (AWS deploy → contact-api), then re-run frontend publish."
+              fi
               exit 1
             fi
           done

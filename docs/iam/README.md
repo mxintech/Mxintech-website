@@ -4,6 +4,14 @@ This repository deploys with **GitHub Actions OIDC** and runs the contact form o
 
 Account: `401202591305` · Region: `us-east-1` · GitHub repo: `mxintech/Mxintech-website`
 
+## Security admin only — never via CI or automation agents
+
+**IAM roles and policies are owned by your security / platform team.** GitHub Actions, CloudFormation, SAM, and coding agents must **never** create, update, delete, or attach IAM roles or policies.
+
+This repo only **documents** the JSON your admin should apply in the AWS IAM console (or their internal tooling).
+
+When deploy workflows fail with `AccessDenied` on IAM or S3/CloudFormation actions, send your admin the updated JSON from this folder — do not attempt CLI `iam put-role-policy` from the app team.
+
 ## Roles to create
 
 | Role name | Purpose | Trust policy | Permissions policy |
@@ -80,9 +88,21 @@ aws iam create-open-id-connect-provider \
 
 When adding new Lambdas or AWS services:
 
-1. Extend [lambda-contact-form-role-policy.json](./lambda-contact-form-role-policy.json) and update the role in IAM.
-2. Extend [oidc-github-deploy-role-policy.json](./oidc-github-deploy-role-policy.json) if CI needs new deploy permissions.
+1. Extend [lambda-contact-form-role-policy.json](./lambda-contact-form-role-policy.json) and ask your **security admin** to update the role in IAM.
+2. Extend [oidc-github-deploy-role-policy.json](./oidc-github-deploy-role-policy.json) if CI needs new deploy permissions — **security admin applies** the change.
 3. Keep Lambda roles **out of** the SAM/CloudFormation template so OIDC never needs `iam:CreateRole`.
+
+### Current deploy blocker (2026-06-23)
+
+**Website stack** and **frontend publish** are deployed successfully.
+
+**Contact API** stack `mxintech-contact-api` may be in **`ROLLBACK_FAILED`** after a partial create. Ask your security admin to refresh inline policy **`MxintechWebsiteDeploy`** from the latest [oidc-github-deploy-role-policy.json](./oidc-github-deploy-role-policy.json):
+
+1. **`CloudFormationTransform`** — `cloudformation:CreateChangeSet` on `arn:aws:cloudformation:us-east-1:aws:transform/Serverless-2016-10-31` (literal `aws`, not the account ID)
+2. **`Route53ChangeStatus`** — `route53:GetChange` on `arn:aws:route53:::change/*` (not on the hosted zone ARN)
+3. **`CloudFormationWebsiteStack`** — includes `cloudformation:ContinueUpdateRollback` for stuck stacks
+
+After the policy is applied, re-run **AWS deploy → contact-api** (the workflow skips stuck Route53 records during rollback recovery), then **Frontend publish**.
 
 ## Related docs
 

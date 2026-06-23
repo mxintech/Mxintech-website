@@ -60,17 +60,24 @@ const ContactForm = ({ contactType, title, description }) => {
     setSubmitStatus(null);
     setErrorMessage('');
 
-    const apiEndpoint = process.env.REACT_APP_API_ENDPOINT;
+    const apiEndpoint = process.env.REACT_APP_API_ENDPOINT?.trim();
     const placeholderPattern = /your-api-endpoint\.execute-api\.region\.amazonaws\.com/i;
-    if (!apiEndpoint || placeholderPattern.test(apiEndpoint)) {
+    const isValidApiEndpoint =
+      apiEndpoint &&
+      apiEndpoint !== 'None' &&
+      !placeholderPattern.test(apiEndpoint) &&
+      /^https?:\/\//i.test(apiEndpoint);
+    if (!isValidApiEndpoint) {
       setIsSubmitting(false);
       setSubmitStatus('error');
       setErrorMessage('El formulario no está configurado. Por favor contacte al administrador.');
       return;
     }
 
+    const contactUrl = `${apiEndpoint.replace(/\/+$/, '')}/contact`;
+
     try {
-      const response = await fetch(`${apiEndpoint}/contact`, {
+      const response = await fetch(contactUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -84,6 +91,11 @@ const ContactForm = ({ contactType, title, description }) => {
           })
         ),
       });
+
+      const contentType = response.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        throw new Error('El servicio de contacto no está disponible. Intenta más tarde.');
+      }
 
       const data = await response.json();
 

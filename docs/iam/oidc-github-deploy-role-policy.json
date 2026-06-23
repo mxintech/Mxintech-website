@@ -18,7 +18,8 @@
         "cloudformation:DeleteChangeSet",
         "cloudformation:DescribeChangeSet",
         "cloudformation:ListChangeSets",
-        "cloudformation:GetTemplateSummary"
+        "cloudformation:GetTemplateSummary",
+        "cloudformation:ContinueUpdateRollback"
       ],
       "Resource": [
         "arn:aws:cloudformation:us-east-1:401202591305:stack/mxintech-website/*",
@@ -29,7 +30,7 @@
       "Sid": "CloudFormationTransform",
       "Effect": "Allow",
       "Action": "cloudformation:CreateChangeSet",
-      "Resource": "arn:aws:cloudformation:us-east-1:401202591305:transform/Serverless-2016-10-31"
+      "Resource": "arn:aws:cloudformation:us-east-1:aws:transform/Serverless-2016-10-31"
     },
     {
       "Sid": "SamArtifactBucket",
@@ -136,10 +137,15 @@
       "Effect": "Allow",
       "Action": [
         "route53:ChangeResourceRecordSets",
-        "route53:ListResourceRecordSets",
-        "route53:GetChange"
+        "route53:ListResourceRecordSets"
       ],
       "Resource": "arn:aws:route53:::hostedzone/Z08260591V5SBJARZB4I0"
+    },
+    {
+      "Sid": "Route53ChangeStatus",
+      "Effect": "Allow",
+      "Action": "route53:GetChange",
+      "Resource": "arn:aws:route53:::change/*"
     },
     {
       "Sid": "SecretsManagerTurnstile",
