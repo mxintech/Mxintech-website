@@ -56,6 +56,24 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
           role-duration-seconds: 900
 
+      - name: Recover stuck website stack if needed
+        if: env.STACK == 'website'
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=$(aws cloudformation describe-stacks \
+            --stack-name mxintech-website \
+            --query 'Stacks[0].StackStatus' \
+            --output text)
+          echo "Current stack status: $status"
+          if [[ "$status" == "UPDATE_ROLLBACK_FAILED" ]]; then
+            echo "Continuing rollback (skipping resources blocked by prior IAM gaps)..."
+            aws cloudformation continue-update-rollback \
+              --stack-name mxintech-website \
+              --resources-to-skip BucketPolicyForLogging S3Bucket
+            aws cloudformation wait stack-rollback-complete --stack-name mxintech-website
+          fi
+
       - name: Deploy website stack
         if: env.STACK == 'website'
         run: |
