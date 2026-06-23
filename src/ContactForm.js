@@ -176,7 +176,7 @@ const ContactForm = ({ contactType, title, description }) => {
       </div>
 
       <div className="form-group">
-        <label htmlFor={`mobile-${contactType}`}>Número de teléfono:</label>
+        <label htmlFor={`mobile-${contactType}`}>Número de teléfono (opcional):</label>
         <input
           type="tel"
           id={`mobile-${contactType}`}
@@ -186,7 +186,6 @@ const ContactForm = ({ contactType, title, description }) => {
           placeholder="+52 123 456 7890"
           maxLength={LIMITS.mobile}
           autoComplete="tel"
-          required
           disabled={isSubmitting}
         />
       </div>

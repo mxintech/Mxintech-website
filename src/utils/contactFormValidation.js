@@ -42,9 +42,10 @@ export const validateContactForm = ({
   if (!EMAIL_PATTERN.test(cleanEmail)) return 'Por favor ingresa un correo electrónico válido';
 
   const cleanMobile = sanitizeField(mobile);
-  if (!cleanMobile) return 'El número de teléfono es requerido';
-  if (cleanMobile.length > LIMITS.mobile) return 'El teléfono es demasiado largo';
-  if (!PHONE_PATTERN.test(cleanMobile)) return 'Por favor ingresa un teléfono válido';
+  if (cleanMobile) {
+    if (cleanMobile.length > LIMITS.mobile) return 'El teléfono es demasiado largo';
+    if (!PHONE_PATTERN.test(cleanMobile)) return 'Por favor ingresa un teléfono válido';
+  }
 
   const cleanMessage = sanitizeField(message);
   if (!cleanMessage) return 'El mensaje es requerido';

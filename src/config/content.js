@@ -25,6 +25,7 @@ export const KCD_2026 = {
   newDate: '18 de Abril de 2026',
   ticketUrl:
     'https://community.cncf.io/events/details/cncf-kcd-guadalajara-presents-kcd-guadalajara-2026/cohost-kcd-guadalajara/#/purchase',
+  showAnnouncementBar: false,
 };
 
 export const AWS_COMMUNITY_DAY = {

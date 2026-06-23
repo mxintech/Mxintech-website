@@ -142,6 +142,23 @@ def sanitize_text(value, field_name, max_length, pattern=None):
     return cleaned
 
 
+def sanitize_optional_text(value, field_name, max_length, pattern=None):
+    if not isinstance(value, str):
+        raise ValueError(f'{field_name} is invalid')
+
+    cleaned = CONTROL_CHARS.sub('', value.strip())
+    if not cleaned:
+        return ''
+    if len(cleaned) > max_length:
+        raise ValueError(f'{field_name} is too long')
+    if SCRIPT_PATTERN.search(cleaned):
+        raise ValueError(f'{field_name} contains disallowed content')
+    if pattern and not pattern.match(cleaned):
+        raise ValueError(f'{field_name} has an invalid format')
+
+    return cleaned
+
+
 def validate_payload(body):
     contact_type = body.get('contactType', '')
     if contact_type not in CONTACT_TYPES:
@@ -149,7 +166,7 @@ def validate_payload(body):
 
     name = sanitize_text(body.get('name', ''), 'name', MAX_NAME, NAME_PATTERN)
     email = sanitize_text(body.get('email', ''), 'email', MAX_EMAIL, EMAIL_PATTERN).lower()
-    mobile = sanitize_text(body.get('mobile', ''), 'mobile', MAX_PHONE, PHONE_PATTERN)
+    mobile = sanitize_optional_text(body.get('mobile', ''), 'mobile', MAX_PHONE, PHONE_PATTERN)
     message = sanitize_text(body.get('message', ''), 'message', MAX_MESSAGE)
 
     turnstile_token = body.get('turnstileToken', '')
@@ -218,6 +235,7 @@ def lambda_handler(event, context):
 
         safe_name = html.escape(payload['name'])
         safe_message = html.escape(payload['message'])
+        phone_display = payload['mobile'] or 'No proporcionado'
 
         if SES_IDENTITY_ARN:
             try:
@@ -232,7 +250,7 @@ def lambda_handler(event, context):
                         f'Resumen:\n'
                         f'- Tipo: {type_name}\n'
                         f'- Email: {payload["email"]}\n'
-                        f'- Teléfono: {payload["mobile"]}\n\n'
+                        f'- Teléfono: {phone_display}\n\n'
                         f'Mensaje:\n{payload["message"]}\n\n'
                         f'Saludos,\nEl equipo de México in Tech'
                     ),
@@ -249,7 +267,7 @@ def lambda_handler(event, context):
                             f'Tipo: {type_name}\n'
                             f'Nombre: {payload["name"]}\n'
                             f'Email: {payload["email"]}\n'
-                            f'Teléfono: {payload["mobile"]}\n'
+                            f'Teléfono: {phone_display}\n'
                             f'IP: {source_ip}\n'
                             f'Fecha: {timestamp}\n\n'
                             f'Mensaje:\n{payload["message"]}'

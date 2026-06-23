@@ -8,6 +8,10 @@
   --announcement-height: 44px;
 }
 
+.App.announcement-disabled {
+  --announcement-height: 0px;
+}
+
 /* Animated gradient border (--rotate used by eventos-card-1) */
 @property --rotate {
   syntax: "<angle>";
@@ -1787,6 +1791,10 @@ main {
   :root {
     --header-height: 56px;
     --announcement-height: 64px;
+  }
+
+  .App.announcement-disabled {
+    --announcement-height: 0px;
   }
 
   .announcement-bar--hidden-mobile {

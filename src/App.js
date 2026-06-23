@@ -519,6 +519,8 @@ function App() {
   }, [location.pathname, location.hash]);
 
   useEffect(() => {
+    if (!KCD_2026.showAnnouncementBar) return;
+
     const handleAnnouncementVisibility = () => {
       const isMobile = window.matchMedia('(max-width: 768px)').matches;
       if (!isMobile) {
@@ -551,7 +553,11 @@ function App() {
   };
 
   return (
-    <div className={`App ${hideAnnouncementMobile ? 'announcement-collapsed-mobile' : ''}`}>
+    <div
+      className={`App ${hideAnnouncementMobile ? 'announcement-collapsed-mobile' : ''} ${
+        !KCD_2026.showAnnouncementBar ? 'announcement-disabled' : ''
+      }`}
+    >
       {/* Barra de navegación */}
       <header className="header">
         <nav className="nav">
@@ -615,6 +621,7 @@ function App() {
         </nav>
       </header>
 
+      {KCD_2026.showAnnouncementBar && (
       <div
         className={`announcement-bar ${hideAnnouncementMobile ? 'announcement-bar--hidden-mobile' : ''}`}
         role="status"
@@ -635,6 +642,7 @@ function App() {
           </span>
         </div>
       </div>
+      )}
 
 
       <div className="theme-toggle-wrap">
