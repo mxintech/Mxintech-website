@@ -30,7 +30,8 @@ jobs:
           exit 1
 
       - name: Confirm allowed actor
-        run: echo "Authorized actor: ${{ github.actor }}"
+        run: |
+          echo "Authorized actor: ${{ github.actor }}"
 
   publish:
     name: Build and publish frontend

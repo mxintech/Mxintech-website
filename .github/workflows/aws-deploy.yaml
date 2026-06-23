@@ -35,7 +35,8 @@ jobs:
           exit 1
 
       - name: Confirm allowed actor
-        run: echo "Authorized actor: ${{ github.actor }}"
+        run: |
+          echo "Authorized actor: ${{ github.actor }}"
 
   deploy:
     name: Deploy to AWS
@@ -158,4 +159,5 @@ jobs:
               "ProjectName=mxintech-website ApiDomainName=api.mxintech.org RootDomainName=mxintech.org HostedZoneId=Z08260591V5SBJARZB4I0 AllowedOrigin=https://mxintech.org FrontendCloudFrontDomainName=${{ steps.website.outputs.frontend_domain }} SesIdentityArn=arn:aws:ses:us-east-1:401202591305:identity/mxintech.org NotificationEmail=contacto@mxintech.org ContactFormLambdaRoleArn=arn:aws:iam::401202591305:role/mxintech-website-lambda-contract-form-role OriginVerifySecret=${{ steps.origin_secret.outputs.origin_secret }} TurnstileSecretKey=${{ steps.turnstile.outputs.secret_key }}"
 
       - name: Deploy summary
-        run: echo "Deployed stack: mxintech-${STACK}"
+        run: |
+          echo "Deployed stack: mxintech-${STACK}"
