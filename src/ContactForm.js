@@ -144,7 +144,7 @@ const ContactForm = ({ contactType, title, description }) => {
       )}
 
       <div className="form-group">
-        <label htmlFor={`nombre-${contactType}`}>Nombre completo:</label>
+        <label htmlFor={`nombre-${contactType}`}>Nombre completo (requerido):</label>
         <input
           type="text"
           id={`nombre-${contactType}`}
@@ -155,12 +155,13 @@ const ContactForm = ({ contactType, title, description }) => {
           maxLength={LIMITS.name}
           autoComplete="name"
           required
+          aria-required="true"
           disabled={isSubmitting}
         />
       </div>
 
       <div className="form-group">
-        <label htmlFor={`email-${contactType}`}>Correo electrónico:</label>
+        <label htmlFor={`email-${contactType}`}>Correo electrónico (requerido):</label>
         <input
           type="email"
           id={`email-${contactType}`}
@@ -171,6 +172,7 @@ const ContactForm = ({ contactType, title, description }) => {
           maxLength={LIMITS.email}
           autoComplete="email"
           required
+          aria-required="true"
           disabled={isSubmitting}
         />
       </div>
@@ -191,7 +193,7 @@ const ContactForm = ({ contactType, title, description }) => {
       </div>
 
       <div className="form-group">
-        <label htmlFor={`mensaje-${contactType}`}>Mensaje:</label>
+        <label htmlFor={`mensaje-${contactType}`}>Mensaje (requerido):</label>
         <textarea
           id={`mensaje-${contactType}`}
           name="message"
@@ -201,6 +203,7 @@ const ContactForm = ({ contactType, title, description }) => {
           placeholder="Escribe tu mensaje..."
           maxLength={LIMITS.message}
           required
+          aria-required="true"
           disabled={isSubmitting}
         />
       </div>
