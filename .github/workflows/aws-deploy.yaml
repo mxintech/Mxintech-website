@@ -88,7 +88,11 @@ jobs:
             --query 'Stacks[0].StackStatus' \
             --output text)
           echo "Current contact API stack status: $status"
-          if [[ "$status" == "ROLLBACK_FAILED" || "$status" == "UPDATE_ROLLBACK_FAILED" ]]; then
+          if [[ "$status" == "ROLLBACK_FAILED" ]]; then
+            echo "Deleting failed create stack before redeploy..."
+            aws cloudformation delete-stack --stack-name mxintech-contact-api
+            aws cloudformation wait stack-delete-complete --stack-name mxintech-contact-api
+          elif [[ "$status" == "UPDATE_ROLLBACK_FAILED" ]]; then
             echo "Continuing rollback (skipping Route53 records blocked by prior IAM gaps)..."
             aws cloudformation continue-update-rollback \
               --stack-name mxintech-contact-api \
