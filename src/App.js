@@ -36,6 +36,9 @@ import {
   FaEnvelope
 } from 'react-icons/fa';
 import { SiMeetup } from 'react-icons/si';
+import { SOCIAL_LINKS, youtubeLiveUrl, youtubeThumbnail } from './config/social';
+import { WEBINARS, KCD_2026, AWS_COMMUNITY_DAY, MEETUP_LINK } from './config/content';
+import { usePageMeta } from './hooks/usePageMeta';
 
 const ACERCADE_SLIDES = [
   {
@@ -225,11 +228,11 @@ const HomePage = () => {
           </div>
           <div className="hero-copy">
             <div className="hero-brand">
-              <img src={ajolote} alt="Ajolote" className="hero-logo" />
-              <span className="hero-brand-name">Mexico in Tech</span>
+              <img src={ajolote} alt="Ajolote — logo de México in Tech" className="hero-logo" />
+              <h1 className="hero-brand-name">Mexico in Tech</h1>
             </div>
             <p className="hero-description">
-              <b>DE DEVS PARA DEVS:</b> Compartiendo conocimiento real, webinars y eventos para impulsar tu carrera.
+              <b>DE DEVS PARA DEVS:</b> Comunidades tech en México. Somos el AWS User Group Tlaxcala — webinars, eventos y cursos para impulsar tu carrera.
             </p>
             <div className="hero-actions">
               <Link to="/contact/member" className="hero-button hero-primary">
@@ -249,90 +252,33 @@ const HomePage = () => {
       <section id="video" className="section webinars-section">
         <h2>Webinars</h2>
         <div className="webinars-grid">
-          <a
-            href="https://youtube.com/live/GoTTYOpzvRg"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="webinar-card"
-          >
-            <div className="webinar-thumbnail">
-              <img
-                src="https://img.youtube.com/vi/GoTTYOpzvRg/maxresdefault.jpg"
-                alt="Webinar 1"
-                onError={(e) => {
-                  e.target.src = `https://img.youtube.com/vi/GoTTYOpzvRg/hqdefault.jpg`;
-                }}
-              />
-              <div className="webinar-play-overlay">
-                <FaYoutube className="play-icon" />
+          {WEBINARS.map((webinar) => (
+            <a
+              key={webinar.id}
+              href={youtubeLiveUrl(webinar.id)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="webinar-card"
+            >
+              <div className="webinar-thumbnail">
+                <img
+                  src={youtubeThumbnail(webinar.id)}
+                  alt={webinar.title}
+                  onError={(e) => {
+                    e.target.src = youtubeThumbnail(webinar.id, 'hqdefault');
+                  }}
+                />
+                <div className="webinar-play-overlay">
+                  <FaYoutube className="play-icon" />
+                </div>
               </div>
-            </div>
-            <h3 className="webinar-title">GitOps, ArgoCD, Rollouts y más</h3>
-          </a>
-          <a
-            href="https://youtube.com/live/0Kf2v6D1ApI?feature=share"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="webinar-card"
-          >
-            <div className="webinar-thumbnail">
-              <img
-                src="https://img.youtube.com/vi/0Kf2v6D1ApI/maxresdefault.jpg"
-                alt="Webinar 2"
-                onError={(e) => {
-                  e.target.src = `https://img.youtube.com/vi/0Kf2v6D1ApI/hqdefault.jpg`;
-                }}
-              />
-              <div className="webinar-play-overlay">
-                <FaYoutube className="play-icon" />
-              </div>
-            </div>
-            <h3 className="webinar-title">Mi primera chamba, Tips para recien egresados</h3>
-          </a>
-          <a
-            href="https://youtube.com/live/JlF9ey7S9dI?feature=share"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="webinar-card"
-          >
-            <div className="webinar-thumbnail">
-              <img
-                src="https://img.youtube.com/vi/JlF9ey7S9dI/maxresdefault.jpg"
-                alt="Webinar 3"
-                onError={(e) => {
-                  e.target.src = `https://img.youtube.com/vi/JlF9ey7S9dI/hqdefault.jpg`;
-                }}
-              />
-              <div className="webinar-play-overlay">
-                <FaYoutube className="play-icon" />
-              </div>
-            </div>
-            <h3 className="webinar-title">¿Qué necesitas para certificarte como KCNA?</h3>
-          </a>
-          <a
-            href="https://youtube.com/live/4qtKxMpkPsk?feature=share"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="webinar-card"
-          >
-            <div className="webinar-thumbnail">
-              <img
-                src="https://img.youtube.com/vi/4qtKxMpkPsk/maxresdefault.jpg"
-                alt="Webinar 4"
-                onError={(e) => {
-                  e.target.src = `https://img.youtube.com/vi/4qtKxMpkPsk/hqdefault.jpg`;
-                }}
-              />
-              <div className="webinar-play-overlay">
-                <FaYoutube className="play-icon" />
-              </div>
-            </div>
-            <h3 className="webinar-title">¿Qué son los orquestadores de contenedores?</h3>
-          </a>
+              <h3 className="webinar-title">{webinar.title}</h3>
+            </a>
+          ))}
         </div>
         <div className="webinars-subscribe">
           <a
-            href="https://www.youtube.com/mexicointech"
+            href={SOCIAL_LINKS.youtube}
             target="_blank"
             rel="noopener noreferrer"
             className="subscribe-button"
@@ -350,10 +296,10 @@ const HomePage = () => {
           <div className="eventos-video-col">
             <div className="eventos-video-wrap">
               <div className="eventos-video-content">
-                <h3 className="eventos-card-title">AWS Community Day</h3>
+                <h3 className="eventos-card-title">{AWS_COMMUNITY_DAY.name}</h3>
                 <p className="eventos-date">
                   <FaCalendarAlt aria-hidden />
-                  14 de Junio de 2025
+                  {AWS_COMMUNITY_DAY.date}
                 </p>
               </div>
               <video
@@ -370,16 +316,16 @@ const HomePage = () => {
         <div className="eventos-card eventos-card-1">
           <h3 className="eventos-card-title">Próximos eventos</h3>
           <div className="eventos-card-content">
-            <p>Kubernetes Community Day 2026, Guadalajara</p>
+            <p>{KCD_2026.name}</p>
             <p className="eventos-date">
               <FaCalendarAlt aria-hidden />
-              <s>28 de febrero de 2026</s>
+              <s>{KCD_2026.oldDate}</s>
             </p>
             <p className="eventos-date eventos-date-update">
               <FaExclamationCircle aria-hidden />
-              <strong>Fecha actualizada: 18 de Abril de 2026</strong>
+              <strong>Fecha actualizada: {KCD_2026.newDate}</strong>
             </p>
-            <img src={eventosImage} alt="Kubernetes Community Day 2026, Guadalajara" />
+            <img src={eventosImage} alt={KCD_2026.name} />
           </div>
         </div>
         <div className="eventos-card eventos-card-2">
@@ -387,7 +333,7 @@ const HomePage = () => {
           <div className="eventos-card-content">
             <p>Únete al grupo de AWS, participa en eventos presenciales y en línea, y conecta con más desarrolladores.</p>
             <a
-              href="https://www.meetup.com/aws-user-group-tlaxcala/"
+              href={MEETUP_LINK}
               target="_blank"
               rel="noopener noreferrer"
               className="eventos-meetup-link"
@@ -530,6 +476,7 @@ function App() {
   const [theme, setTheme] = useState('light');
   const [hideAnnouncementMobile, setHideAnnouncementMobile] = useState(false);
   const location = useLocation();
+  usePageMeta();
 
   useEffect(() => {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
@@ -676,9 +623,9 @@ function App() {
         <div className="announcement-content">
           <FaExclamationCircle className="announcement-icon" aria-hidden />
           <span className="announcement-text">
-            Anuncio importante: Kubernetes Community Day cambió de fecha de <s>28 de Febrero de 2026</s> a <strong>18 de Abril de 2026</strong>.{" "}
+            Anuncio importante: Kubernetes Community Day cambió de fecha de <s>{KCD_2026.oldDate}</s> a <strong>{KCD_2026.newDate}</strong>.{" "}
             <a
-              href="https://community.cncf.io/events/details/cncf-kcd-guadalajara-presents-kcd-guadalajara-2026/cohost-kcd-guadalajara/#/purchase"
+              href={KCD_2026.ticketUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="announcement-link"
@@ -772,7 +719,7 @@ function App() {
               <h3 className="footer-social-label">Síguenos</h3>
               <div className="social-icons">
                 <a
-                  href="https://www.facebook.com/mxintech/"
+                  href={SOCIAL_LINKS.facebook}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Facebook"
@@ -780,7 +727,7 @@ function App() {
                   <FaFacebook />
                 </a>
                 <a
-                  href="https://www.linkedin.com/company/mxintech/posts/?feedView=all"
+                  href={SOCIAL_LINKS.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="LinkedIn"
@@ -788,7 +735,7 @@ function App() {
                   <FaLinkedin />
                 </a>
                 <a
-                  href="https://www.youtube.com/mexicointech"
+                  href={SOCIAL_LINKS.youtube}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="YouTube"
@@ -796,7 +743,7 @@ function App() {
                   <FaYoutube />
                 </a>
                 <a
-                  href="https://x.com/mxintech"
+                  href={SOCIAL_LINKS.x}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="X (Twitter)"
@@ -804,7 +751,7 @@ function App() {
                   <FaTwitter />
                 </a>
                 <a
-                  href="https://www.tiktok.com/mxintech"
+                  href={SOCIAL_LINKS.tiktok}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="TikTok"
@@ -812,7 +759,7 @@ function App() {
                   <FaTiktok />
                 </a>
                 <a
-                  href="https://www.twitch.tv/mxintech"
+                  href={SOCIAL_LINKS.twitch}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Twitch"
@@ -822,7 +769,7 @@ function App() {
               </div>
               <div className="footer-meetup-row">
                 <a
-                  href="https://www.meetup.com/aws-user-group-tlaxcala/"
+                  href={MEETUP_LINK}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="eventos-meetup-link footer-meetup-link"

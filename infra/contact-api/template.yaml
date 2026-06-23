@@ -1,0 +1,290 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Contact form API for mxintech.org with DynamoDB, SES, CloudFront, and Turnstile.
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: mxintech-website
+  ApiDomainName:
+    Type: String
+    Default: api.mxintech.org
+  RootDomainName:
+    Type: String
+    Default: mxintech.org
+  HostedZoneId:
+    Type: String
+    Default: Z08260591V5SBJARZB4I0
+  AllowedOrigin:
+    Type: String
+    Default: https://mxintech.org
+  FrontendCloudFrontDomainName:
+    Type: String
+    Default: d1y746pm63k1dn.cloudfront.net
+    Description: CloudFront domain serving the public website.
+  SesIdentityArn:
+    Type: String
+    Default: arn:aws:ses:us-east-1:401202591305:identity/mxintech.org
+    Description: Verified SES domain identity for outbound mail.
+  SesSenderEmail:
+    Type: String
+    Default: noreply@mxintech.org
+  NotificationEmail:
+    Type: String
+    Default: contacto@mxintech.org
+    Description: Team inbox notified on each new submission.
+  OriginVerifySecret:
+    Type: String
+    NoEcho: true
+    Description: Shared secret injected by CloudFront as X-Origin-Verify.
+  TurnstileSecretKey:
+    Type: String
+    NoEcho: true
+    Default: ''
+    Description: Cloudflare Turnstile secret key.
+  ContactFormLambdaRoleArn:
+    Type: String
+    Default: arn:aws:iam::401202591305:role/mxintech-website-lambda-contract-form-role
+    Description: Pre-created Lambda execution role. See docs/iam/README.md.
+
+Resources:
+  ApiCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref ApiDomainName
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: !Ref ApiDomainName
+          HostedZoneId: !Ref HostedZoneId
+
+  ContactSubmissionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${ProjectName}-contact-submissions'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: S
+        - AttributeName: status
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: StatusTimestampIndex
+          KeySchema:
+            - AttributeName: status
+              KeyType: HASH
+            - AttributeName: timestamp
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      Tags:
+        - Key: project
+          Value: !Ref ProjectName
+
+  ContactFormHandler:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub '${ProjectName}-contact-form-handler'
+      Runtime: python3.12
+      Handler: handler.lambda_handler
+      CodeUri: src/
+      Timeout: 30
+      Role: !Ref ContactFormLambdaRoleArn
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref ContactSubmissionsTable
+          ALLOWED_ORIGIN: !Ref AllowedOrigin
+          ORIGIN_VERIFY_SECRET: !Ref OriginVerifySecret
+          TURNSTILE_SECRET_KEY: !Ref TurnstileSecretKey
+          SES_IDENTITY_ARN: !Ref SesIdentityArn
+          SES_SENDER_EMAIL: !Ref SesSenderEmail
+          NOTIFICATION_EMAIL: !Ref NotificationEmail
+          REQUESTED_WITH_HEADER: MxintechWebsite
+          FRONTEND_CLOUDFRONT_DOMAIN: !Ref FrontendCloudFrontDomainName
+
+  ContactFormApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub '${ProjectName}-contact-api'
+      Description: Contact form API for mxintech.org
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+
+  ContactResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref ContactFormApi
+      ParentId: !GetAtt ContactFormApi.RootResourceId
+      PathPart: contact
+
+  ContactOptionsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ContactFormApi
+      ResourceId: !Ref ContactResource
+      HttpMethod: OPTIONS
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: !Sub "'${AllowedOrigin}'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Requested-With'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+  ContactPostMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ContactFormApi
+      ResourceId: !Ref ContactResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ContactFormHandler.Arn}/invocations'
+
+  ContactFormLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ContactFormHandler
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ContactFormApi}/*/*'
+
+  ContactFormApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - ContactPostMethod
+      - ContactOptionsMethod
+    Properties:
+      RestApiId: !Ref ContactFormApi
+      StageName: prod
+
+  ApiOriginGateFunction:
+    Type: AWS::CloudFront::Function
+    Properties:
+      Name: !Sub '${ProjectName}-contact-api-origin-gate'
+      AutoPublish: true
+      FunctionConfig:
+        Comment: Block mutations without the allowed browser Origin at the edge.
+        Runtime: cloudfront-js-2.0
+      FunctionCode: !Sub |
+        function handler(event) {
+          var request = event.request;
+          if (request.method === 'POST' || request.method === 'PUT' || request.method === 'PATCH' || request.method === 'DELETE') {
+            var origin = request.headers.origin ? request.headers.origin.value : '';
+            if (origin !== '${AllowedOrigin}') {
+              return {
+                statusCode: 403,
+                statusDescription: 'Forbidden',
+                headers: { 'content-type': { value: 'application/json' } },
+                body: '{"message":"Origin not allowed"}'
+              };
+            }
+          }
+          return request;
+        }
+
+  ApiCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: !Sub '${ProjectName} contact API'
+        HttpVersion: http2
+        IPV6Enabled: true
+        Aliases:
+          - !Ref ApiDomainName
+        Origins:
+          - Id: api-gateway-origin
+            DomainName: !Sub '${ContactFormApi}.execute-api.${AWS::Region}.amazonaws.com'
+            OriginPath: /prod
+            CustomOriginConfig:
+              HTTPSPort: 443
+              OriginProtocolPolicy: https-only
+              OriginSSLProtocols:
+                - TLSv1.2
+            OriginCustomHeaders:
+              - HeaderName: X-Mxintech-Origin
+                HeaderValue: !Ref FrontendCloudFrontDomainName
+              - HeaderName: X-Origin-Verify
+                HeaderValue: !Ref OriginVerifySecret
+        DefaultCacheBehavior:
+          TargetOriginId: api-gateway-origin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+            - PUT
+            - PATCH
+            - POST
+            - DELETE
+          CachedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          Compress: true
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+          OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac
+          FunctionAssociations:
+            - EventType: viewer-request
+              FunctionARN: !GetAtt ApiOriginGateFunction.FunctionMetadata.FunctionARN
+        ViewerCertificate:
+          AcmCertificateArn: !Ref ApiCertificate
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021
+      Tags:
+        - Key: project
+          Value: !Ref ProjectName
+
+  ApiCloudFrontAliasRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Ref ApiDomainName
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt ApiCloudFrontDistribution.DomainName
+        HostedZoneId: Z2FDTNDATAQYW2
+
+  ApiCloudFrontAliasRecordIpv6:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Ref ApiDomainName
+      Type: AAAA
+      AliasTarget:
+        DNSName: !GetAtt ApiCloudFrontDistribution.DomainName
+        HostedZoneId: Z2FDTNDATAQYW2
+
+Outputs:
+  ApiEndpoint:
+    Description: Direct API Gateway endpoint (prefer CloudFront domain in production)
+    Value: !Sub 'https://${ContactFormApi}.execute-api.${AWS::Region}.amazonaws.com/prod'
+  ApiPublicUrl:
+    Description: Public contact API base URL
+    Value: !Sub 'https://${ApiDomainName}'
+  ApiCloudFrontDomainName:
+    Value: !GetAtt ApiCloudFrontDistribution.DomainName
+  ApiCloudFrontDistributionId:
+    Value: !Ref ApiCloudFrontDistribution
+  DynamoDBTableName:
+    Value: !Ref ContactSubmissionsTable
+  LambdaFunctionArn:
+    Value: !GetAtt ContactFormHandler.Arn

@@ -12,9 +12,9 @@
   height: 100%;
   min-height: 0;
   touch-action: pan-y;
-  background: linear-gradient(45deg, #2a4f99 0%, #3e6ccf 50%, #5b85e0 100%);
-  background-size: 200% 200%;
-  animation: background 6s ease infinite;
+  background: linear-gradient(145deg, #0c1222 0%, #141c2e 45%, #1a2744 100%);
+  background-size: 100% 100%;
+  animation: none;
   display: flex;
   align-items: center;
   justify-content: center;

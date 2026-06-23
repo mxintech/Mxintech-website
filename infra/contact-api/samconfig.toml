@@ -1,0 +1,19 @@
+version = 0.1
+
+[default.global.parameters]
+stack_name = "mxintech-contact-api"
+
+[default.validate.parameters]
+lint = false
+
+[default.build.parameters]
+use_container = false
+
+[default.deploy.parameters]
+stack_name = "mxintech-contact-api"
+region = "us-east-1"
+confirm_changeset = false
+no_fail_on_empty_changeset = true
+capabilities = "CAPABILITY_IAM CAPABILITY_NAMED_IAM"
+tags = "project=mxintech-website stack=mxintech-contact-api managed-by=sam environment=prod"
+parameter_overrides = "ProjectName=mxintech-website ApiDomainName=api.mxintech.org RootDomainName=mxintech.org HostedZoneId=Z08260591V5SBJARZB4I0 AllowedOrigin=https://mxintech.org FrontendCloudFrontDomainName=d1y746pm63k1dn.cloudfront.net SesIdentityArn=arn:aws:ses:us-east-1:401202591305:identity/mxintech.org NotificationEmail=contacto@mxintech.org ContactFormLambdaRoleArn=arn:aws:iam::401202591305:role/mxintech-website-lambda-contract-form-role"

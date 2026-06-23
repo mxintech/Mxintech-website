@@ -1,6 +1,7 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "México in Tech",
+  "name": "México in Tech | AWS User Group Tlaxcala",
+  "description": "Comunidades tech en México. Webinars, eventos y cursos para desarrolladores.",
   "icons": [
     {
       "src": "favicon.ico",
@@ -20,6 +21,7 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#0c1222",
+  "background_color": "#ffffff",
+  "lang": "es-MX"
 }

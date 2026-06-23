@@ -1,8 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
+import TurnstileWidget, { turnstileEnabled } from './components/TurnstileWidget';
+import {
+  buildContactPayload,
+  validateContactForm,
+  LIMITS,
+} from './utils/contactFormValidation';
 import './ContactForm.css';
 
 const ContactForm = ({ contactType, title, description }) => {
   const successTimeoutRef = useRef(null);
+  const requiresTurnstile = turnstileEnabled();
 
   useEffect(() => {
     return () => {
@@ -14,54 +21,38 @@ const ContactForm = ({ contactType, title, description }) => {
     name: '',
     email: '',
     mobile: '',
-    message: ''
+    message: '',
   });
+  const [turnstileToken, setTurnstileToken] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState(null); // 'success' | 'error' | null
+  const [submitStatus, setSubmitStatus] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
-    // Clear error when user starts typing
     if (submitStatus === 'error') {
       setSubmitStatus(null);
       setErrorMessage('');
     }
   };
 
-  const validateForm = () => {
-    if (!formData.name.trim()) {
-      setErrorMessage('El nombre es requerido');
-      return false;
-    }
-    if (!formData.email.trim()) {
-      setErrorMessage('El correo electrónico es requerido');
-      return false;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      setErrorMessage('Por favor ingresa un correo electrónico válido');
-      return false;
-    }
-    if (!formData.mobile.trim()) {
-      setErrorMessage('El número de teléfono es requerido');
-      return false;
-    }
-    if (!formData.message.trim()) {
-      setErrorMessage('El mensaje es requerido');
-      return false;
-    }
-    return true;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
+
+    const validationError = validateContactForm({
+      contactType,
+      ...formData,
+      turnstileToken,
+      turnstileRequired: requiresTurnstile,
+    });
+
+    if (validationError) {
       setSubmitStatus('error');
+      setErrorMessage(validationError);
       return;
     }
 
@@ -74,7 +65,7 @@ const ContactForm = ({ contactType, title, description }) => {
     if (!apiEndpoint || placeholderPattern.test(apiEndpoint)) {
       setIsSubmitting(false);
       setSubmitStatus('error');
-      setErrorMessage('El formulario no está configurado. Por favor configure REACT_APP_API_ENDPOINT o contacte al administrador.');
+      setErrorMessage('El formulario no está configurado. Por favor contacte al administrador.');
       return;
     }
 
@@ -83,14 +74,15 @@ const ContactForm = ({ contactType, title, description }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-Requested-With': 'MxintechWebsite',
         },
-        body: JSON.stringify({
-          contactType: contactType,
-          name: formData.name.trim(),
-          email: formData.email.trim(),
-          mobile: formData.mobile.trim(),
-          message: formData.message.trim()
-        })
+        body: JSON.stringify(
+          buildContactPayload({
+            contactType,
+            ...formData,
+            turnstileToken,
+          })
+        ),
       });
 
       const data = await response.json();
@@ -99,22 +91,20 @@ const ContactForm = ({ contactType, title, description }) => {
         throw new Error(data.message || 'Error al enviar el formulario');
       }
 
-      // Success
       if (successTimeoutRef.current) clearTimeout(successTimeoutRef.current);
       setSubmitStatus('success');
       setFormData({
         name: '',
         email: '',
         mobile: '',
-        message: ''
+        message: '',
       });
+      setTurnstileToken('');
 
-      // Clear success message after 5 seconds; cleanup on unmount or next submit
       successTimeoutRef.current = setTimeout(() => {
         setSubmitStatus(null);
         successTimeoutRef.current = null;
       }, 5000);
-
     } catch (error) {
       console.error('Form submission error:', error);
       setSubmitStatus('error');
@@ -125,17 +115,18 @@ const ContactForm = ({ contactType, title, description }) => {
   };
 
   return (
-    <form className="contact-form" onSubmit={handleSubmit}>
+    <form className="contact-form" onSubmit={handleSubmit} noValidate>
       <h4>{title || 'Envíanos un mensaje'}</h4>
-      
+      {description && <p className="contact-form-description">{description}</p>}
+
       {submitStatus === 'success' && (
-        <div className="form-message form-message-success">
+        <div className="form-message form-message-success" role="status">
           ¡Mensaje enviado exitosamente! Te contactaremos pronto.
         </div>
       )}
 
       {submitStatus === 'error' && errorMessage && (
-        <div className="form-message form-message-error">
+        <div className="form-message form-message-error" role="alert">
           {errorMessage}
         </div>
       )}
@@ -149,6 +140,8 @@ const ContactForm = ({ contactType, title, description }) => {
           value={formData.name}
           onChange={handleChange}
           placeholder="Tu nombre completo"
+          maxLength={LIMITS.name}
+          autoComplete="name"
           required
           disabled={isSubmitting}
         />
@@ -162,7 +155,9 @@ const ContactForm = ({ contactType, title, description }) => {
           name="email"
           value={formData.email}
           onChange={handleChange}
-          placeholder="juan@gmail.com"
+          placeholder="tu@correo.com"
+          maxLength={LIMITS.email}
+          autoComplete="email"
           required
           disabled={isSubmitting}
         />
@@ -177,6 +172,8 @@ const ContactForm = ({ contactType, title, description }) => {
           value={formData.mobile}
           onChange={handleChange}
           placeholder="+52 123 456 7890"
+          maxLength={LIMITS.mobile}
+          autoComplete="tel"
           required
           disabled={isSubmitting}
         />
@@ -191,14 +188,29 @@ const ContactForm = ({ contactType, title, description }) => {
           onChange={handleChange}
           rows="5"
           placeholder="Escribe tu mensaje..."
+          maxLength={LIMITS.message}
           required
           disabled={isSubmitting}
-        ></textarea>
+        />
       </div>
 
-      <button 
-        type="submit" 
-        disabled={isSubmitting}
+      {requiresTurnstile && (
+        <div className="form-group turnstile-group">
+          <TurnstileWidget
+            onToken={setTurnstileToken}
+            onExpire={() => setTurnstileToken('')}
+            onError={() => {
+              setTurnstileToken('');
+              setSubmitStatus('error');
+              setErrorMessage('No se pudo cargar la verificación anti-bots. Recarga e intenta de nuevo.');
+            }}
+          />
+        </div>
+      )}
+
+      <button
+        type="submit"
+        disabled={isSubmitting || (requiresTurnstile && !turnstileToken)}
         className={isSubmitting ? 'submitting' : ''}
       >
         {isSubmitting ? 'Enviando...' : 'Enviar Mensaje'}

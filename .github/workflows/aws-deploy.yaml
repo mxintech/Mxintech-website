@@ -1,0 +1,161 @@
+# Deploy Mxintech-website infrastructure using GitHub OIDC.
+name: AWS deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      stack:
+        description: Stack to deploy
+        required: true
+        type: choice
+        options:
+          - website
+          - contact-api
+
+env:
+  AWS_REGION: us-east-1
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  SAM_ARTIFACT_BUCKET: aws-sam-cli-managed-default-samclisourcebucket-sr9qqam3qsx8
+  ORIGIN_SECRET_PARAM: /mxintech-website/contact-api/origin-verify-secret
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  authorize:
+    name: Authorize manual trigger
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if actor is not allowed
+        if: ${{ github.actor != 'poltorres7' }}
+        run: |
+          echo "This workflow can only be executed manually by poltorres7."
+          echo "Triggered by: ${{ github.actor }}"
+          exit 1
+
+      - name: Confirm allowed actor
+        run: echo "Authorized actor: ${{ github.actor }}"
+
+  deploy:
+    name: Deploy to AWS
+    needs: authorize
+    runs-on: ubuntu-latest
+    env:
+      STACK: ${{ github.event.inputs.stack }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Configure AWS credentials from GitHub OIDC
+        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
+        with:
+          role-to-assume: arn:aws:iam::401202591305:role/oidc-github-mxintech-website-role
+          role-session-name: github-actions-${{ github.run_id }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-duration-seconds: 900
+
+      - name: Deploy website stack
+        if: env.STACK == 'website'
+        run: |
+          set -euo pipefail
+          aws cloudformation deploy \
+            --template-file infra/website/root.yaml \
+            --stack-name mxintech-website \
+            --no-fail-on-empty-changeset \
+            --parameter-overrides \
+              SiteBucketName=mxintech.org \
+              LoggingBucketName=mxintech-site-logs \
+              RootDomainName=mxintech.org \
+              AllowedOrigin=https://mxintech.org \
+              CertificateArn=arn:aws:acm:us-east-1:401202591305:certificate/3b434445-b0a5-456c-be8f-5f5c4727d963 \
+              HostedZoneId=Z08260591V5SBJARZB4I0
+
+      - name: Set up AWS SAM CLI
+        if: env.STACK == 'contact-api'
+        uses: aws-actions/setup-sam@89ddb14d60e682855e3fea4be85b3c56485de310 # v3
+
+      - name: Ensure contact API origin verify secret in SSM
+        if: env.STACK == 'contact-api'
+        id: origin_secret
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! aws ssm get-parameter \
+            --name "${ORIGIN_SECRET_PARAM}" \
+            --with-decryption \
+            --query 'Parameter.Name' \
+            --output text >/dev/null 2>&1; then
+            aws ssm put-parameter \
+              --name "${ORIGIN_SECRET_PARAM}" \
+              --type SecureString \
+              --value "$(openssl rand -hex 32)" \
+              --overwrite
+            echo "Created ${ORIGIN_SECRET_PARAM}"
+          fi
+          origin_secret=$(aws ssm get-parameter \
+            --name "${ORIGIN_SECRET_PARAM}" \
+            --with-decryption \
+            --query 'Parameter.Value' \
+            --output text)
+          echo "origin_secret=$origin_secret" >> "$GITHUB_OUTPUT"
+
+      - name: Load Turnstile secret from Secrets Manager
+        if: env.STACK == 'contact-api'
+        id: turnstile
+        shell: bash
+        run: |
+          set -euo pipefail
+          turnstile_secret_json=$(aws secretsmanager get-secret-value \
+            --secret-id mxintech-website/cloudflare-widget/turnstile \
+            --query 'SecretString' \
+            --output text)
+          turnstile_secret_key=$(python3 -c "import json,sys; print(json.load(sys.stdin)['SECRET_KEY'])" <<< "$turnstile_secret_json")
+          if [[ -z "$turnstile_secret_key" ]]; then
+            echo "Turnstile SECRET_KEY is empty in mxintech-website/cloudflare-widget/turnstile"
+            exit 1
+          fi
+          echo "secret_key=$turnstile_secret_key" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve frontend CloudFront domain for contact API
+        if: env.STACK == 'contact-api'
+        id: website
+        shell: bash
+        run: |
+          set -euo pipefail
+          frontend_domain=$(aws cloudformation describe-stacks \
+            --stack-name mxintech-website \
+            --query "Stacks[0].Outputs[?OutputKey=='FrontendCloudFrontDomainName'].OutputValue | [0]" \
+            --output text)
+          if [[ -z "$frontend_domain" || "$frontend_domain" == "None" ]]; then
+            frontend_domain="d1y746pm63k1dn.cloudfront.net"
+          fi
+          echo "frontend_domain=$frontend_domain" >> "$GITHUB_OUTPUT"
+
+      - name: Confirm shared SAM artifact bucket
+        if: env.STACK == 'contact-api'
+        run: aws s3api head-bucket --bucket "${SAM_ARTIFACT_BUCKET}"
+
+      - name: Build contact API
+        if: env.STACK == 'contact-api'
+        working-directory: infra/contact-api
+        run: sam build
+
+      - name: Deploy contact API stack
+        if: env.STACK == 'contact-api'
+        working-directory: infra/contact-api
+        run: |
+          set -euo pipefail
+          sam deploy \
+            --region "${AWS_REGION}" \
+            --stack-name mxintech-contact-api \
+            --config-file samconfig.toml \
+            --s3-bucket "${SAM_ARTIFACT_BUCKET}" \
+            --capabilities CAPABILITY_IAM \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset \
+            --parameter-overrides \
+              "ProjectName=mxintech-website ApiDomainName=api.mxintech.org RootDomainName=mxintech.org HostedZoneId=Z08260591V5SBJARZB4I0 AllowedOrigin=https://mxintech.org FrontendCloudFrontDomainName=${{ steps.website.outputs.frontend_domain }} SesIdentityArn=arn:aws:ses:us-east-1:401202591305:identity/mxintech.org NotificationEmail=contacto@mxintech.org ContactFormLambdaRoleArn=arn:aws:iam::401202591305:role/mxintech-website-lambda-contract-form-role OriginVerifySecret=${{ steps.origin_secret.outputs.origin_secret }} TurnstileSecretKey=${{ steps.turnstile.outputs.secret_key }}"
+
+      - name: Deploy summary
+        run: echo "Deployed stack: mxintech-${STACK}"

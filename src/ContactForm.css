@@ -144,3 +144,18 @@
   outline: 2px solid rgba(255, 255, 255, 0.95);
   outline-offset: 2px;
 }
+
+.turnstile-group {
+  display: flex;
+  justify-content: center;
+}
+
+.turnstile-widget {
+  min-height: 65px;
+}
+
+.contact-form-description {
+  margin-top: 0;
+  color: var(--p-text, #4763A1);
+  font-size: 0.95rem;
+}

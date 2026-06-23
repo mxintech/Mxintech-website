@@ -463,6 +463,7 @@ section.acercade-section {
 }
 
 .hero-brand-name {
+  margin: 0;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -1092,8 +1093,10 @@ section.eventos-section,
 }
 
 [data-theme="dark"] .eventos-video-wrap {
-  background-color: rgba(89, 131, 252, 1);
-  background-image: radial-gradient(ellipse at center, rgba(89, 131, 252, 1) 0%, rgba(71, 99, 161, 1) 100%);
+  background-color: rgba(30, 41, 59, 0.55);
+  background-image: none;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
   border-color: rgba(255, 255, 255, 0.2);
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2);
 }
@@ -1140,8 +1143,10 @@ section.eventos-section,
 }
 
 [data-theme="dark"] .eventos-card {
-  background-color: rgba(89, 131, 252, 1);
-  background-image: radial-gradient(ellipse at center, rgba(89, 131, 252, 1) 0%, rgba(71, 99, 161, 1) 100%);
+  background-color: rgba(30, 41, 59, 0.55);
+  background-image: none;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
   border-color: rgba(255, 255, 255, 0.2);
   box-shadow: 0 4px 16px rgba(255, 255, 255, 0.2);
 }
