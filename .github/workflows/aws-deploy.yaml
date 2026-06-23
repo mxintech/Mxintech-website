@@ -70,7 +70,8 @@ jobs:
               RootDomainName=mxintech.org \
               AllowedOrigin=https://mxintech.org \
               CertificateArn=arn:aws:acm:us-east-1:401202591305:certificate/3b434445-b0a5-456c-be8f-5f5c4727d963 \
-              HostedZoneId=Z08260591V5SBJARZB4I0
+              HostedZoneId=Z08260591V5SBJARZB4I0 \
+              ManageDnsRecords=false
 
       - name: Set up AWS SAM CLI
         if: env.STACK == 'contact-api'
