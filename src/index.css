@@ -27,10 +27,11 @@
   --mx-cyan-rgb: 17, 207, 231;
   --mx-charcoal-dark: color-mix(in srgb, var(--mx-charcoal) 72%, black);
   --mx-charcoal-deep: color-mix(in srgb, var(--mx-charcoal) 55%, black);
-  --mx-blue-night: #122a5c;
-  --mx-blue-night-deep: #0f2349;
-  --mx-blue-night-rgb: 18, 42, 92;
-  --mx-blue-night-deep-rgb: 15, 35, 73;
+  /* Dark-theme backgrounds: darkened siblings of the nav/footer blue (#3159ad) */
+  --mx-blue-night: #1f3c78;
+  --mx-blue-night-deep: #142850;
+  --mx-blue-night-rgb: 31, 60, 120;
+  --mx-blue-night-deep-rgb: 20, 40, 79;
 
   /* Semantic — light theme */
   --bg: #ffffff;

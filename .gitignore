@@ -25,3 +25,11 @@ yarn-error.log*
 
 # Cursor debug logs
 .cursor/debug-*.log
+
+# Python (contact-api Lambda)
+__pycache__/
+*.py[cod]
+*$py.class
+
+# AWS SAM build artifacts
+.aws-sam/

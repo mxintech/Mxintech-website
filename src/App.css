@@ -56,6 +56,31 @@ body[data-theme="dark"] .eventos-card {
   background-image: none !important;
 }
 
+/* Dark theme: give the actual cards a small elegant elevation so they keep
+   contrast against the blue background (slider, about, webinars, eventos). */
+[data-theme="dark"] .acercade-slide-box,
+body[data-theme="dark"] .acercade-slide-box,
+[data-theme="dark"] .info-card,
+body[data-theme="dark"] .info-card,
+[data-theme="dark"] .webinar-card,
+body[data-theme="dark"] .webinar-card,
+[data-theme="dark"] .eventos-card,
+body[data-theme="dark"] .eventos-card,
+[data-theme="dark"] .eventos-video-wrap,
+body[data-theme="dark"] .eventos-video-wrap {
+  background-color: rgba(var(--mx-blue-night-deep-rgb), 0.42) !important;
+  background-image: linear-gradient(
+    150deg,
+    rgba(var(--mx-blue-rgb), 0.20) 0%,
+    rgba(var(--mx-blue-night-deep-rgb), 0.48) 100%
+  ) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.45),
+    0 2px 6px rgba(0, 0, 0, 0.30),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
 /* Secciones generales */
 /* Secciones generales */
 .section {
