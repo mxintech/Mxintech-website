@@ -1,44 +1,85 @@
-/* Theme tokens */
+/* México in Tech — brand + theme tokens (see docs/brand/README.md) */
 :root {
+  /* Primary */
+  --mx-blue: #1B3F8B;
+  --mx-pink: #EF5980;
+  --mx-blue-80: color-mix(in srgb, var(--mx-blue) 80%, white);
+  --mx-blue-60: color-mix(in srgb, var(--mx-blue) 60%, white);
+  --mx-blue-40: color-mix(in srgb, var(--mx-blue) 40%, white);
+  --mx-blue-20: color-mix(in srgb, var(--mx-blue) 20%, white);
+  --mx-pink-80: color-mix(in srgb, var(--mx-pink) 80%, white);
+  --mx-pink-60: color-mix(in srgb, var(--mx-pink) 60%, white);
+  --mx-pink-40: color-mix(in srgb, var(--mx-pink) 40%, white);
+  --mx-pink-20: color-mix(in srgb, var(--mx-pink) 20%, white);
+
+  /* Secondary */
+  --mx-cyan: #11CFE7;
+  --mx-orange: #F78D46;
+  --mx-charcoal: #314044;
+  --mx-green: #63CE36;
+  --mx-cyan-80: color-mix(in srgb, var(--mx-cyan) 80%, white);
+  --mx-green-80: color-mix(in srgb, var(--mx-green) 80%, white);
+
+  /* RGB helpers for alpha overlays */
+  --mx-blue-rgb: 27, 63, 139;
+  --mx-pink-rgb: 239, 89, 128;
+  --mx-charcoal-rgb: 49, 64, 68;
+  --mx-cyan-rgb: 17, 207, 231;
+
+  /* Semantic — light theme */
   --bg: #ffffff;
   --bg-gradient: none;
-  --text: #ef5980;
-  --heading: #4763A1;
-  --p-text: #4763A1;
-  --ul-text: #4763A1;
-  --nav-bg: #4763A1;
-  --nav-bg-95: rgba(71, 99, 161, 0.95);
-  --nav-bg-85: rgba(71, 99, 161, 0.85);
-  --nav-bg-70: rgba(71, 99, 161, 0.7);
+  --text: var(--mx-charcoal);
+  --heading: var(--mx-blue);
+  --p-text: var(--mx-charcoal);
+  --ul-text: var(--mx-charcoal);
+  --text-accent: var(--mx-pink);
+  --nav-bg: var(--mx-blue);
+  --nav-bg-95: rgba(var(--mx-blue-rgb), 0.95);
+  --nav-bg-85: rgba(var(--mx-blue-rgb), 0.85);
+  --nav-bg-70: rgba(var(--mx-blue-rgb), 0.7);
   --card-bg: #ffffff;
   --card-bg-gradient: none;
   --panel-bg: #ffffff;
-  --shadow-strong: rgba(0, 0, 0, 0.1);
+  --shadow-strong: rgba(var(--mx-charcoal-rgb), 0.12);
+  --border-subtle: rgba(var(--mx-blue-rgb), 0.12);
+  --border-medium: rgba(var(--mx-blue-rgb), 0.24);
+  --focus-ring: rgba(var(--mx-blue-rgb), 0.18);
+  --surface-muted: var(--mx-blue-20);
 }
 
 [data-theme="dark"] {
-  --bg: #0c1222;
-  --bg-gradient: radial-gradient(ellipse 120% 80% at 50% -20%, rgba(71, 99, 161, 0.22) 0%, transparent 55%);
-  --text: #f1f5f9;
+  --bg: #1a2226;
+  --bg-gradient: radial-gradient(
+    ellipse 120% 80% at 50% -20%,
+    rgba(var(--mx-blue-rgb), 0.28) 0%,
+    transparent 55%
+  );
+  --text: #eef2f6;
   --heading: #f8fafc;
   --p-text: #cbd5e1;
   --ul-text: #cbd5e1;
-  --nav-bg: rgba(15, 23, 42, 0.88);
-  --nav-bg-95: rgba(15, 23, 42, 0.95);
-  --nav-bg-85: rgba(15, 23, 42, 0.85);
-  --nav-bg-70: rgba(15, 23, 42, 0.7);
-  --card-bg: rgba(30, 41, 59, 0.55);
+  --text-accent: var(--mx-pink);
+  --nav-bg: rgba(var(--mx-charcoal-rgb), 0.92);
+  --nav-bg-95: rgba(var(--mx-charcoal-rgb), 0.95);
+  --nav-bg-85: rgba(var(--mx-charcoal-rgb), 0.85);
+  --nav-bg-70: rgba(var(--mx-charcoal-rgb), 0.7);
+  --card-bg: rgba(49, 64, 68, 0.55);
   --card-bg-gradient: none;
-  --panel-bg: rgba(30, 41, 59, 0.75);
+  --panel-bg: rgba(49, 64, 68, 0.78);
   --shadow-strong: rgba(0, 0, 0, 0.45);
+  --border-subtle: rgba(255, 255, 255, 0.14);
+  --border-medium: rgba(255, 255, 255, 0.24);
+  --focus-ring: rgba(var(--mx-cyan-rgb), 0.22);
+  --surface-muted: rgba(255, 255, 255, 0.08);
 }
 
 [data-theme="dark"] body,
 body[data-theme="dark"] {
-  background-color: #0c1222;
+  background-color: var(--bg);
   background-image:
-    radial-gradient(ellipse 80% 50% at 15% -10%, rgba(71, 99, 161, 0.2) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 40% at 85% 110%, rgba(239, 89, 128, 0.07) 0%, transparent 50%);
+    radial-gradient(ellipse 80% 50% at 15% -10%, rgba(var(--mx-blue-rgb), 0.22) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 85% 110%, rgba(var(--mx-pink-rgb), 0.1) 0%, transparent 50%);
   background-size: auto;
   background-repeat: no-repeat;
   background-attachment: fixed;
@@ -85,7 +126,6 @@ html, body {
   scroll-padding-top: calc(var(--header-height) + var(--announcement-height, 0px));
 }
 
-/* Disable scroll-snap on mobile and tablet (e.g. iPad 810px) for natural scrolling */
 @media (max-width: 900px) {
   html,
   body {
@@ -104,11 +144,11 @@ html, body {
 
 main section {
   margin-bottom: 3rem;
-  background: #ffffff;
+  background: var(--bg);
   background-image: none;
   padding: clamp(0.75rem, 3vw, 1.5rem);
   border-radius: 60px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 10px var(--shadow-strong);
 }
 
 [data-theme="dark"] main section,
@@ -121,26 +161,24 @@ body[data-theme="dark"] main section {
 }
 
 h1, h2, h3 {
-  color: #ef5980;
+  color: var(--text-accent);
 }
 
 p {
   color: var(--p-text, var(--text));
 }
 
-/* Contenedor responsivo para el video */
 .video-box {
   width: 100%;
   max-width: 800px;
   margin: 0 auto;
   position: relative;
   aspect-ratio: 16 / 9;
-  background: #ef5980;
+  background: var(--mx-pink);
   border-radius: 10px;
   overflow: hidden;
 }
 
-/* El video ocupa siempre el cuadro */
 .video-box video {
   width: 100%;
   height: 100%;
@@ -161,5 +199,5 @@ p {
 }
 
 .social-icons a:hover {
-  color: #1da1f2;
+  color: var(--mx-cyan);
 }

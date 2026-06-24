@@ -1,3 +1,4 @@
+import { BRAND } from './brand';
 import {
   FaUserPlus,
   FaUserTie,
@@ -21,13 +22,13 @@ import {
 
 /**
  * Copy, benefits, and form settings for each contact profile.
- * See docs/contact-forms/README.md for product intent and maintenance notes.
+ * See also [brand colors](../brand/README.md) for official palette tokens.
  */
 export const CONTACT_FORMS = {
   member: {
     contactType: 'member',
     icon: FaUserPlus,
-    accent: '#4763A1',
+    accent: BRAND.primary.blue,
     headline: 'Únete como miembro',
     tagline: 'Aprende, crece y mantente al día con la comunidad tech',
     intro:
@@ -67,7 +68,7 @@ export const CONTACT_FORMS = {
   leader: {
     contactType: 'leader',
     icon: FaUserTie,
-    accent: '#ef5980',
+    accent: BRAND.primary.pink,
     headline: 'Conviértete en líder',
     tagline: 'Da el siguiente paso: de espectador a impulsor de la comunidad',
     intro:
@@ -107,7 +108,7 @@ export const CONTACT_FORMS = {
   speaker: {
     contactType: 'speaker',
     icon: FaMicrophone,
-    accent: '#638eba',
+    accent: BRAND.secondary.cyan,
     headline: 'Comparte como speaker',
     tagline: 'Tu experiencia técnica puede inspirar a toda la comunidad',
     intro:
@@ -150,7 +151,7 @@ export const CONTACT_FORMS = {
   business: {
     contactType: 'business',
     icon: FaHandshake,
-    accent: '#2d6a4f',
+    accent: BRAND.secondary.green,
     headline: 'Empresas y colaboraciones',
     tagline: 'Apoya la comunidad tech y conecta con talento en México',
     intro:

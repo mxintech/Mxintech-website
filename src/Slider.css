@@ -12,7 +12,7 @@
   height: 100%;
   min-height: 0;
   touch-action: pan-y;
-  background: linear-gradient(145deg, #0c1222 0%, #141c2e 45%, #1a2744 100%);
+  background: linear-gradient(145deg, var(--mx-charcoal) 0%, #243038 45%, var(--mx-blue) 100%);
   background-size: 100% 100%;
   animation: none;
   display: flex;
@@ -155,7 +155,7 @@
 
 .slider-progress-bar {
   height: 100%;
-  background: #EF5980;
+  background: var(--mx-pink);
   border-radius: 999px;
   transition: width 0.1s linear;
 }
@@ -199,7 +199,7 @@
 }
 
 .slider-dot.active {
-  background: #EF5980;
+  background: var(--mx-pink);
   transform: translateY(-1px);
 }
 
