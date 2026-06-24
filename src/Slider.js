@@ -7,8 +7,8 @@ import slide4 from "./assets/slide4.jpg";
 import { FaStar, FaCalendarAlt, FaMapPin } from "react-icons/fa";
 import { SiAmazonwebservices } from "react-icons/si";
 
-const INTERVAL_MS = 20000; // 20 seconds per slide
-const TICK_MS = 100;      // update progress every 100ms
+const INTERVAL_MS = 20000;
+const TICK_MS = 100;
 
 const SLIDES = [
   {
@@ -39,6 +39,7 @@ const Slider = () => {
   const [current, setCurrent] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const touchStartRef = useRef(null);
+  const slide = SLIDES[current];
 
   const goToSlide = useCallback((index) => {
     setCurrent(index);
@@ -55,7 +56,6 @@ const Slider = () => {
     setElapsed(0);
   }, []);
 
-  /* Auto-advance and progress countdown: single interval on mount */
   useEffect(() => {
     const id = setInterval(() => {
       setElapsed((prev) => {
@@ -90,48 +90,71 @@ const Slider = () => {
     <div className="slider-hero">
       <div
         className="slider-frame"
-        key={SLIDES[current].id}
-        style={{ "--slide-image": `url(${SLIDES[current].url})` }}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         onTouchCancel={() => { touchStartRef.current = null; }}
         role="region"
-        aria-label="Slider de bienvenida - desliza para cambiar"
+        aria-roledescription="carousel"
+        aria-label="Slider de bienvenida"
       >
+        <div className="slider-media" key={slide.id} aria-hidden="true">
+          <img
+            className="slider-media-backdrop"
+            src={slide.url}
+            alt=""
+            decoding="async"
+            draggable={false}
+          />
+          <img
+            className="slider-media-foreground"
+            src={slide.url}
+            alt=""
+            decoding="async"
+            draggable={false}
+          />
+        </div>
+
         <div className="slider-overlay" />
+
         <div className="slider-welcome-message">
-          {SLIDES[current].icons && (
+          {slide.icons && (
             <div className="slider-caption-icons" aria-hidden>
-              {SLIDES[current].icons.map(({ Icon, key, label }) => (
+              {slide.icons.map(({ Icon, key, label }) => (
                 <Icon key={key} className={`slider-icon slider-icon-${key}`} aria-label={label} />
               ))}
             </div>
           )}
-          <p className="caption">{SLIDES[current].caption}</p>
+          <p className="caption" id="slider-current-caption">{slide.caption}</p>
         </div>
-        <div className="slider-controls">
-          <button type="button" onClick={prevSlide} className="slider-button" aria-label="Anterior">❮</button>
-          <button type="button" onClick={nextSlide} className="slider-button" aria-label="Siguiente">❯</button>
-        </div>
-        <div className="slider-center-group">
-          <div className="slider-progress-wrap" aria-label="Tiempo restante para el siguiente slide">
-            <div
-              className="slider-progress-bar"
-              style={{ width: `${progressPercent}%` }}
-              aria-hidden
-            />
+
+        <div className="slider-toolbar">
+          <button type="button" onClick={prevSlide} className="slider-button" aria-label="Slide anterior">
+            ❮
+          </button>
+
+          <div className="slider-center-group">
+            <div className="slider-progress-wrap" aria-hidden="true">
+              <div className="slider-progress-bar" style={{ width: `${progressPercent}%` }} />
+            </div>
+            <div className="slider-dots" role="tablist" aria-label="Slides">
+              {SLIDES.map((item, idx) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={idx === current}
+                  aria-controls="slider-current-caption"
+                  className={`slider-dot ${idx === current ? "active" : ""}`}
+                  onClick={() => goToSlide(idx)}
+                  aria-label={`Ir al slide ${idx + 1}: ${item.caption}`}
+                />
+              ))}
+            </div>
           </div>
-          <div className="slider-dots">
-          {SLIDES.map((slide, idx) => (
-            <button
-              key={slide.id}
-              type="button"
-              className={`slider-dot ${idx === current ? 'active' : ''}`}
-              onClick={() => goToSlide(idx)}
-              aria-label={`Ir al slide ${idx + 1}`}
-            />
-          ))}
-          </div>
+
+          <button type="button" onClick={nextSlide} className="slider-button" aria-label="Slide siguiente">
+            ❯
+          </button>
         </div>
       </div>
     </div>

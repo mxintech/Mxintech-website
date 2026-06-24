@@ -414,11 +414,8 @@ section.acercade-section {
 /* Bienvenida */
 /* Bienvenida */
 #inicio {
-  /*el color del slider*/
   background-color: var(--card-bg);
   background-image: var(--bg-gradient);
-  border-radius: 10px;
-  box-shadow: 0 6px 7px rgba(255, 255, 255, 0.35);
   display: flex;
   padding: clamp(1rem, 2.5vw, 2.5rem);
   max-width: none;
@@ -426,30 +423,33 @@ section.acercade-section {
   border-radius: 0;
   box-shadow: none;
   min-height: calc(100vh - var(--header-height) - var(--announcement-height));
-  height: calc(100vh - var(--header-height) - var(--announcement-height));
-  align-items: stretch;
+  height: auto;
+  align-items: center;
 }
 
 .hero-layout {
   width: 100%;
-  height: 100%;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-  gap: clamp(1.5rem, 4vw, 3rem);
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: clamp(1.25rem, 3vw, 2.5rem);
   align-items: center;
 }
 
 .hero-slider {
-  height: 85%;
-  min-height: 320px;
-  border-radius: 24px;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  max-height: min(520px, calc(100vh - var(--header-height) - var(--announcement-height) - 10rem));
+  min-height: clamp(200px, 38vw, 280px);
+  border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 16px 40px rgba(var(--mx-blue-rgb), 0.2);
 }
 
 .hero-slider .slider-hero {
   height: 100%;
+  min-height: 100%;
 }
 
 .hero-copy {
@@ -540,13 +540,19 @@ section.acercade-section {
 }
 
 @media (max-width: 900px) {
+  #inicio {
+    min-height: auto;
+    padding: clamp(0.75rem, 3vw, 1.25rem);
+  }
+
   .hero-layout {
     grid-template-columns: 1fr;
-    grid-template-rows: 1.1fr 0.9fr;
+    grid-template-rows: auto auto;
+    gap: clamp(0.85rem, 3vw, 1.25rem);
   }
 
   .hero-copy {
-    justify-content: center;
+    justify-content: flex-start;
   }
 
   .hero-description {
@@ -554,13 +560,13 @@ section.acercade-section {
   }
 
   .hero-slider {
-    height: 88%;
-    min-height: 320px;
+    aspect-ratio: 16 / 10;
+    max-height: min(420px, 52vh);
+    min-height: clamp(180px, 52vw, 260px);
     width: 100%;
   }
 }
 
-/* Reduce empty space above/below slider at 810px and below */
 @media (max-width: 810px) {
   #inicio {
     padding: 0.75rem 1rem;
@@ -568,23 +574,19 @@ section.acercade-section {
 
   .hero-layout {
     gap: 0.75rem;
-    align-items: stretch;
   }
 
   .hero-slider {
-    height: 100%;
-    min-height: 200px;
+    aspect-ratio: 4 / 3;
+    max-height: min(360px, 48vh);
+    min-height: 180px;
   }
 }
 
 @media (max-width: 768px) {
-  .hero-layout {
-    grid-template-rows: 1.25fr 0.75fr;
-  }
-
   .hero-slider {
-    height: 100%;
-    width: 100%;
+    aspect-ratio: 4 / 3;
+    max-height: min(340px, 45vh);
   }
 }
 
@@ -598,8 +600,10 @@ section.acercade-section {
   }
 
   .hero-slider {
-    height: 100%;
-    width: 100%;
+    aspect-ratio: 1 / 1;
+    max-height: min(320px, 72vw);
+    min-height: 160px;
+    border-radius: 16px;
   }
 }
 
