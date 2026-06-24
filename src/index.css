@@ -25,6 +25,12 @@
   --mx-pink-rgb: 239, 89, 128;
   --mx-charcoal-rgb: 49, 64, 68;
   --mx-cyan-rgb: 17, 207, 231;
+  --mx-charcoal-dark: color-mix(in srgb, var(--mx-charcoal) 72%, black);
+  --mx-charcoal-deep: color-mix(in srgb, var(--mx-charcoal) 55%, black);
+  --mx-blue-night: #122a5c;
+  --mx-blue-night-deep: #0f2349;
+  --mx-blue-night-rgb: 18, 42, 92;
+  --mx-blue-night-deep-rgb: 15, 35, 73;
 
   /* Semantic — light theme */
   --bg: #ffffff;
@@ -49,37 +55,42 @@
 }
 
 [data-theme="dark"] {
-  --bg: #1a2226;
+  --bg: var(--mx-blue-night);
   --bg-gradient: radial-gradient(
     ellipse 120% 80% at 50% -20%,
-    rgba(var(--mx-blue-rgb), 0.28) 0%,
-    transparent 55%
+    rgba(var(--mx-blue-rgb), 0.55) 0%,
+    transparent 58%
   );
-  --text: #eef2f6;
-  --heading: #f8fafc;
-  --p-text: #cbd5e1;
-  --ul-text: #cbd5e1;
+  --text: color-mix(in srgb, white 94%, var(--mx-blue-20));
+  --heading: #ffffff;
+  --p-text: color-mix(in srgb, white 82%, var(--mx-blue-40));
+  --ul-text: color-mix(in srgb, white 82%, var(--mx-blue-40));
   --text-accent: var(--mx-pink);
-  --nav-bg: rgba(var(--mx-charcoal-rgb), 0.92);
-  --nav-bg-95: rgba(var(--mx-charcoal-rgb), 0.95);
-  --nav-bg-85: rgba(var(--mx-charcoal-rgb), 0.85);
-  --nav-bg-70: rgba(var(--mx-charcoal-rgb), 0.7);
-  --card-bg: rgba(49, 64, 68, 0.55);
-  --card-bg-gradient: none;
-  --panel-bg: rgba(49, 64, 68, 0.78);
-  --shadow-strong: rgba(0, 0, 0, 0.45);
-  --border-subtle: rgba(255, 255, 255, 0.14);
-  --border-medium: rgba(255, 255, 255, 0.24);
-  --focus-ring: rgba(var(--mx-cyan-rgb), 0.22);
-  --surface-muted: rgba(255, 255, 255, 0.08);
+  --nav-bg: var(--mx-blue);
+  --nav-bg-95: rgba(var(--mx-blue-rgb), 0.95);
+  --nav-bg-85: rgba(var(--mx-blue-rgb), 0.88);
+  --nav-bg-70: rgba(var(--mx-blue-rgb), 0.76);
+  --card-bg: rgba(var(--mx-blue-night-rgb), 0.72);
+  --card-bg-gradient: linear-gradient(
+    145deg,
+    rgba(var(--mx-blue-rgb), 0.28) 0%,
+    rgba(var(--mx-blue-night-deep-rgb), 0.82) 100%
+  );
+  --panel-bg: rgba(var(--mx-blue-night-deep-rgb), 0.88);
+  --shadow-strong: rgba(0, 0, 0, 0.38);
+  --border-subtle: rgba(var(--mx-blue-rgb), 0.35);
+  --border-medium: rgba(var(--mx-pink-rgb), 0.32);
+  --focus-ring: rgba(var(--mx-cyan-rgb), 0.32);
+  --surface-muted: rgba(var(--mx-blue-rgb), 0.18);
 }
 
 [data-theme="dark"] body,
 body[data-theme="dark"] {
   background-color: var(--bg);
   background-image:
-    radial-gradient(ellipse 80% 50% at 15% -10%, rgba(var(--mx-blue-rgb), 0.22) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 40% at 85% 110%, rgba(var(--mx-pink-rgb), 0.1) 0%, transparent 50%);
+    radial-gradient(ellipse 95% 60% at 10% -10%, rgba(var(--mx-blue-rgb), 0.52) 0%, transparent 58%),
+    radial-gradient(ellipse 75% 48% at 90% 108%, rgba(var(--mx-pink-rgb), 0.26) 0%, transparent 52%),
+    radial-gradient(ellipse 55% 38% at 68% 22%, rgba(var(--mx-cyan-rgb), 0.12) 0%, transparent 55%);
   background-size: auto;
   background-repeat: no-repeat;
   background-attachment: fixed;

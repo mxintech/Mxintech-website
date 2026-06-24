@@ -659,7 +659,7 @@ section.acercade-section {
 }
 
 [data-theme="dark"] .info-card {
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--border-subtle);
   box-shadow: none;
 }
 
@@ -706,13 +706,13 @@ section.acercade-section {
 }
 
 [data-theme="dark"] .info-card p {
-  color: white;
+  color: var(--p-text);
 }
 
 [data-theme="dark"] .wip-label {
-  border-color: rgba(255, 255, 255, 0.6);
-  background: rgba(255, 255, 255, 0.14);
-  color: #ffffff;
+  border-color: rgba(var(--mx-pink-rgb), 0.45);
+  background: rgba(var(--mx-pink-rgb), 0.16);
+  color: var(--mx-pink-80);
 }
 
 .info-card:hover {
@@ -722,7 +722,7 @@ section.acercade-section {
 
 [data-theme="dark"] .info-card:hover {
   box-shadow: none;
-  border-color: rgba(255, 255, 255, 0.35);
+  border-color: var(--border-medium);
 }
 
 /* Formulario de contacto */
@@ -868,34 +868,35 @@ section.contact-section,
 }
 
 [data-theme="dark"] .contact-grid {
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--border-subtle);
   box-shadow: none;
-  color: white;
+  color: var(--text);
 }
 
 [data-theme="dark"] .contact-hero-badge {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.18);
+  background: var(--surface-muted);
+  border-color: var(--border-subtle);
 }
 
 [data-theme="dark"] .contact-hero-icon,
 [data-theme="dark"] .contact-hero-tagline {
-  color: #ff9bb8;
+  color: var(--mx-pink-80);
 }
 
 [data-theme="dark"] .contact-benefit-icon {
-  background: rgba(255, 255, 255, 0.08);
-  color: #ff9bb8;
+  background: var(--surface-muted);
+  border: 1px solid var(--border-subtle);
+  color: var(--mx-pink);
 }
 
 [data-theme="dark"] .contact-benefit-body strong {
-  color: white;
+  color: var(--heading);
 }
 
 [data-theme="dark"] .contact-form-panel {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.16);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+  background: var(--surface-muted);
+  border-color: var(--border-subtle);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
 }
 
 .contact-hero h2 {
@@ -917,7 +918,7 @@ section.contact-section,
 }
 
 [data-theme="dark"] .contact-copy {
-  color: white;
+  color: var(--text);
 }
 
 .contact-copy h2 {
@@ -931,7 +932,7 @@ section.contact-section,
 
 [data-theme="dark"] .contact-copy p,
 [data-theme="dark"] .contact-copy li {
-  color: white;
+  color: var(--p-text);
 }
 
 .contact-copy p {
@@ -1257,12 +1258,11 @@ section.eventos-section,
 }
 
 [data-theme="dark"] .eventos-video-wrap {
-  background-color: rgba(30, 41, 59, 0.55);
-  background-image: none;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: var(--card-bg);
+  background-image: var(--card-bg-gradient);
+  border: 1px solid var(--border-subtle);
   backdrop-filter: blur(12px);
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.28);
 }
 
 .eventos-video-wrap video {
@@ -1307,12 +1307,11 @@ section.eventos-section,
 }
 
 [data-theme="dark"] .eventos-card {
-  background-color: rgba(30, 41, 59, 0.55);
-  background-image: none;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: var(--card-bg);
+  background-image: var(--card-bg-gradient);
+  border: 1px solid var(--border-subtle);
   backdrop-filter: blur(12px);
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.24);
 }
 
 /* Rotating gradient border effect for Próximos eventos card only */

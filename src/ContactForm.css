@@ -183,29 +183,29 @@
 }
 
 [data-theme="dark"] .contact-form-description {
-  color: rgba(255, 255, 255, 0.88);
+  color: var(--p-text);
 }
 
 [data-theme="dark"] .contact-grid .form-group label {
-  color: white;
+  color: var(--text);
 }
 
 [data-theme="dark"] .contact-form input,
 [data-theme="dark"] .contact-form textarea {
-  background-color: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.22);
+  background-color: var(--surface-muted);
+  border-color: var(--border-subtle);
   color: var(--text);
 }
 
 [data-theme="dark"] .contact-form input:focus,
 [data-theme="dark"] .contact-form textarea:focus {
-  border-color: rgba(255, 255, 255, 0.45);
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12);
+  border-color: rgba(var(--mx-cyan-rgb), 0.55);
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 [data-theme="dark"] .contact-form input:disabled,
 [data-theme="dark"] .contact-form textarea:disabled {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: rgba(var(--mx-blue-night-deep-rgb), 0.55);
 }
 
 [data-theme="dark"] .form-input-icon {
