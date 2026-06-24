@@ -22,7 +22,8 @@ import {
 
 /**
  * Copy, benefits, and form settings for each contact profile.
- * See also [brand colors](../brand/README.md) for official palette tokens.
+ * See docs/contact-forms/README.md for product intent and maintenance notes.
+ * Brand colors: docs/brand/README.md and src/config/brand.js
  */
 export const CONTACT_FORMS = {
   member: {
