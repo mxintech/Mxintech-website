@@ -1,4 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
+import {
+  FaUser,
+  FaEnvelope,
+  FaPhone,
+  FaCommentDots,
+  FaLightbulb,
+  FaPaperPlane,
+} from 'react-icons/fa';
 import TurnstileWidget, { turnstileEnabled } from './components/TurnstileWidget';
 import {
   buildContactPayload,
@@ -7,9 +15,10 @@ import {
 } from './utils/contactFormValidation';
 import './ContactForm.css';
 
-const ContactForm = ({ contactType, title, description }) => {
+const ContactForm = ({ contactType, formConfig, animated = false }) => {
   const successTimeoutRef = useRef(null);
   const requiresTurnstile = turnstileEnabled();
+  const showTalkTitle = Boolean(formConfig?.showTalkTitle);
 
   useEffect(() => {
     return () => {
@@ -21,6 +30,7 @@ const ContactForm = ({ contactType, title, description }) => {
     name: '',
     email: '',
     mobile: '',
+    talkTitle: '',
     message: '',
   });
   const [turnstileToken, setTurnstileToken] = useState('');
@@ -109,6 +119,7 @@ const ContactForm = ({ contactType, title, description }) => {
         name: '',
         email: '',
         mobile: '',
+        talkTitle: '',
         message: '',
       });
       setTurnstileToken('');
@@ -126,10 +137,28 @@ const ContactForm = ({ contactType, title, description }) => {
     }
   };
 
+  const renderField = (index, label, id, children) => (
+    <div
+      className={`form-group contact-form-field ${animated ? 'contact-form-field--animated' : ''}`}
+      style={animated ? { animationDelay: `${0.15 + index * 0.07}s` } : undefined}
+    >
+      <label htmlFor={id}>{label}</label>
+      {children}
+    </div>
+  );
+
   return (
-    <form className="contact-form" onSubmit={handleSubmit} noValidate>
-      <h4>{title || 'Envíanos un mensaje'}</h4>
-      {description && <p className="contact-form-description">{description}</p>}
+    <form
+      className={`contact-form ${animated ? 'contact-form--visible' : ''}`}
+      onSubmit={handleSubmit}
+      noValidate
+    >
+      <div className="contact-form-header contact-form-field contact-form-field--animated" style={{ animationDelay: '0.05s' }}>
+        <h4>{formConfig?.title || 'Envíanos un mensaje'}</h4>
+        {formConfig?.description && (
+          <p className="contact-form-description">{formConfig.description}</p>
+        )}
+      </div>
 
       {submitStatus === 'success' && (
         <div className="form-message form-message-success" role="status">
@@ -143,73 +172,118 @@ const ContactForm = ({ contactType, title, description }) => {
         </div>
       )}
 
-      <div className="form-group">
-        <label htmlFor={`nombre-${contactType}`}>Nombre completo (requerido):</label>
-        <input
-          type="text"
-          id={`nombre-${contactType}`}
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          placeholder="Tu nombre completo"
-          maxLength={LIMITS.name}
-          autoComplete="name"
-          required
-          aria-required="true"
-          disabled={isSubmitting}
-        />
-      </div>
+      {renderField(
+        0,
+        'Nombre completo (requerido)',
+        `nombre-${contactType}`,
+        <div className="form-input-wrap">
+          <FaUser className="form-input-icon" aria-hidden="true" />
+          <input
+            type="text"
+            id={`nombre-${contactType}`}
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            placeholder="Tu nombre completo"
+            maxLength={LIMITS.name}
+            autoComplete="name"
+            required
+            aria-required="true"
+            disabled={isSubmitting}
+          />
+        </div>
+      )}
 
-      <div className="form-group">
-        <label htmlFor={`email-${contactType}`}>Correo electrónico (requerido):</label>
-        <input
-          type="email"
-          id={`email-${contactType}`}
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          placeholder="tu@correo.com"
-          maxLength={LIMITS.email}
-          autoComplete="email"
-          required
-          aria-required="true"
-          disabled={isSubmitting}
-        />
-      </div>
+      {renderField(
+        1,
+        'Correo electrónico (requerido)',
+        `email-${contactType}`,
+        <div className="form-input-wrap">
+          <FaEnvelope className="form-input-icon" aria-hidden="true" />
+          <input
+            type="email"
+            id={`email-${contactType}`}
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="tu@correo.com"
+            maxLength={LIMITS.email}
+            autoComplete="email"
+            required
+            aria-required="true"
+            disabled={isSubmitting}
+          />
+        </div>
+      )}
 
-      <div className="form-group">
-        <label htmlFor={`mobile-${contactType}`}>Número de teléfono (opcional):</label>
-        <input
-          type="tel"
-          id={`mobile-${contactType}`}
-          name="mobile"
-          value={formData.mobile}
-          onChange={handleChange}
-          placeholder="+52 123 456 7890"
-          maxLength={LIMITS.mobile}
-          autoComplete="tel"
-          disabled={isSubmitting}
-        />
-      </div>
+      {renderField(
+        2,
+        'Número de teléfono (opcional)',
+        `mobile-${contactType}`,
+        <div className="form-input-wrap">
+          <FaPhone className="form-input-icon" aria-hidden="true" />
+          <input
+            type="tel"
+            id={`mobile-${contactType}`}
+            name="mobile"
+            value={formData.mobile}
+            onChange={handleChange}
+            placeholder="+52 123 456 7890"
+            maxLength={LIMITS.mobile}
+            autoComplete="tel"
+            disabled={isSubmitting}
+          />
+        </div>
+      )}
 
-      <div className="form-group">
-        <label htmlFor={`mensaje-${contactType}`}>Mensaje (requerido):</label>
-        <textarea
-          id={`mensaje-${contactType}`}
-          name="message"
-          value={formData.message}
-          onChange={handleChange}
-          rows="5"
-          placeholder="Escribe tu mensaje..."
-          maxLength={LIMITS.message}
-          required
-          aria-required="true"
-          disabled={isSubmitting}
-        />
-      </div>
+      {showTalkTitle &&
+        renderField(
+          3,
+          formConfig.talkTitleLabel || 'Título de la charla (requerido)',
+          `talk-title-${contactType}`,
+          <div className="form-input-wrap">
+            <FaLightbulb className="form-input-icon" aria-hidden="true" />
+            <input
+              type="text"
+              id={`talk-title-${contactType}`}
+              name="talkTitle"
+              value={formData.talkTitle}
+              onChange={handleChange}
+              placeholder={formConfig.talkTitlePlaceholder || 'Nombre de tu charla o taller'}
+              maxLength={LIMITS.talkTitle}
+              required
+              aria-required="true"
+              disabled={isSubmitting}
+            />
+          </div>
+        )}
+
+      {renderField(
+        showTalkTitle ? 4 : 3,
+        formConfig?.messageLabel || 'Mensaje (requerido)',
+        `mensaje-${contactType}`,
+        <div className="form-input-wrap form-input-wrap--textarea">
+          <FaCommentDots className="form-input-icon form-input-icon--textarea" aria-hidden="true" />
+          <textarea
+            id={`mensaje-${contactType}`}
+            name="message"
+            value={formData.message}
+            onChange={handleChange}
+            rows="5"
+            placeholder={formConfig?.messagePlaceholder || 'Escribe tu mensaje...'}
+            maxLength={LIMITS.message}
+            required
+            aria-required="true"
+            disabled={isSubmitting}
+          />
+        </div>
+      )}
 
       {requiresTurnstile && (
-        <div className="form-group turnstile-group">
+        <div
+          className={`form-group turnstile-group contact-form-field ${animated ? 'contact-form-field--animated' : ''}`}
+          style={animated ? { animationDelay: `${0.15 + (showTalkTitle ? 5 : 4) * 0.07}s` } : undefined}
+        >
           <TurnstileWidget
             onToken={setTurnstileToken}
             onExpire={() => setTurnstileToken('')}
@@ -225,9 +299,13 @@ const ContactForm = ({ contactType, title, description }) => {
       <button
         type="submit"
         disabled={isSubmitting || (requiresTurnstile && !turnstileToken)}
-        className={isSubmitting ? 'submitting' : ''}
+        className={`contact-form-submit ${isSubmitting ? 'submitting' : ''} ${
+          animated ? 'contact-form-field contact-form-field--animated' : ''
+        }`}
+        style={animated ? { animationDelay: `${0.15 + (showTalkTitle ? 6 : 5) * 0.07}s` } : undefined}
       >
-        {isSubmitting ? 'Enviando...' : 'Enviar Mensaje'}
+        <FaPaperPlane className="contact-form-submit-icon" aria-hidden="true" />
+        <span>{isSubmitting ? 'Enviando...' : formConfig?.submitLabel || 'Enviar mensaje'}</span>
       </button>
     </form>
   );

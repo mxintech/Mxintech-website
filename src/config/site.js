@@ -29,24 +29,24 @@ export const PAGE_META = {
       'Cursos de AWS, Linux y tecnología cloud en México in Tech. Aprende con la comunidad tech del AWS User Group Tlaxcala.',
   },
   '/contact/member': {
-    title: 'Únete a la comunidad | México in Tech',
+    title: 'Únete como miembro | México in Tech',
     description:
-      'Conviértete en miembro de México in Tech, comunidad tech y AWS User Group Tlaxcala. Accede a eventos, webinars y networking.',
+      'Regístrate en México in Tech para aprender, crecer profesionalmente y enterarte de eventos, cursos y webinars del AWS User Group Tlaxcala.',
   },
   '/contact/leader': {
     title: 'Sé un líder | México in Tech',
     description:
-      'Organiza eventos con México in Tech, comunidad tech en México y AWS User Group Tlaxcala.',
+      'Contribuye activamente a México in Tech: organiza eventos, genera contenido, difunde la comunidad y ayuda a hacerla crecer.',
   },
   '/contact/speaker': {
     title: 'Sé un speaker | México in Tech',
     description:
-      'Comparte tu conocimiento en webinars y eventos de México in Tech, comunidad tech del AWS User Group Tlaxcala.',
+      'Comparte tu experiencia técnica en charlas y webinars de México in Tech. Propón el tema que te gustaría presentar a la comunidad.',
   },
   '/contact/business': {
-    title: 'Patrocinio empresarial | México in Tech',
+    title: 'Empresas y colaboraciones | México in Tech',
     description:
-      'Patrocina a México in Tech, comunidad tech en México. Conecta con desarrolladores del AWS User Group Tlaxcala.',
+      'Patrocina o colabora con México in Tech: sedes, swag, cursos, eventos e invitaciones para impulsar la comunidad tech en México.',
   },
 };
 

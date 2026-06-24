@@ -41,6 +41,7 @@ SCRIPT_PATTERN = re.compile(r'<\s*/?\s*script|javascript:|on\w+\s*=', re.IGNOREC
 MAX_NAME = 100
 MAX_EMAIL = 254
 MAX_PHONE = 20
+MAX_TALK_TITLE = 200
 MAX_MESSAGE = 2000
 
 
@@ -167,6 +168,9 @@ def validate_payload(body):
     name = sanitize_text(body.get('name', ''), 'name', MAX_NAME, NAME_PATTERN)
     email = sanitize_text(body.get('email', ''), 'email', MAX_EMAIL, EMAIL_PATTERN).lower()
     mobile = sanitize_optional_text(body.get('mobile', ''), 'mobile', MAX_PHONE, PHONE_PATTERN)
+    talk_title = sanitize_optional_text(body.get('talkTitle', ''), 'talkTitle', MAX_TALK_TITLE)
+    if contact_type == 'speaker' and not talk_title:
+        raise ValueError('talkTitle is required')
     message = sanitize_text(body.get('message', ''), 'message', MAX_MESSAGE)
 
     turnstile_token = body.get('turnstileToken', '')
@@ -178,6 +182,7 @@ def validate_payload(body):
         'name': name,
         'email': email,
         'mobile': mobile,
+        'talkTitle': talk_title,
         'message': message,
         'turnstileToken': turnstile_token.strip(),
     }
@@ -234,8 +239,17 @@ def lambda_handler(event, context):
         )
 
         safe_name = html.escape(payload['name'])
-        safe_message = html.escape(payload['message'])
         phone_display = payload['mobile'] or 'No proporcionado'
+        talk_title_line = (
+            f'- Charla propuesta: {payload["talkTitle"]}\n'
+            if payload.get('talkTitle')
+            else ''
+        )
+        talk_title_block = (
+            f'Charla propuesta: {payload["talkTitle"]}\n'
+            if payload.get('talkTitle')
+            else ''
+        )
 
         if SES_IDENTITY_ARN:
             try:
@@ -250,7 +264,8 @@ def lambda_handler(event, context):
                         f'Resumen:\n'
                         f'- Tipo: {type_name}\n'
                         f'- Email: {payload["email"]}\n'
-                        f'- Teléfono: {phone_display}\n\n'
+                        f'- Teléfono: {phone_display}\n'
+                        f'{talk_title_line}\n'
                         f'Mensaje:\n{payload["message"]}\n\n'
                         f'Saludos,\nEl equipo de México in Tech'
                     ),
@@ -268,6 +283,7 @@ def lambda_handler(event, context):
                             f'Nombre: {payload["name"]}\n'
                             f'Email: {payload["email"]}\n'
                             f'Teléfono: {phone_display}\n'
+                            f'{talk_title_block}'
                             f'IP: {source_ip}\n'
                             f'Fecha: {timestamp}\n\n'
                             f'Mensaje:\n{payload["message"]}'

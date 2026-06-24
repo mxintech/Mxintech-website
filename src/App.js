@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import './App.css';
 import Slider from './Slider';
-import ContactForm from './ContactForm';
+import ContactPageLayout from './components/ContactPageLayout';
 import video from './assets/aws-community-day-compat.mp4';
 import ajolote from './assets/ajolote.png';
 import logoAwsUgTlaxcala from './assets/logo-aws-ug-tlaxcala.svg';
@@ -349,94 +349,10 @@ const HomePage = () => {
   );
 };
 
-// Contact Pages for different types
-const MemberContactPage = () => (
-  <section id="contacto" className="section contact-section">
-    <div className="contact-grid">
-      <div className="contact-copy">
-        <h2>Únete a nuestra comunidad</h2>
-        <p>Conviértete en miembro de México in Tech y accede a:</p>
-        <ul>
-          <li>Eventos y webinars exclusivos</li>
-          <li>Notificaciones sobre nuevos cursos y talleres</li>
-          <li>Red de networking con otros desarrolladores</li>
-          <li>Recursos y materiales de aprendizaje</li>
-        </ul>
-      </div>
-      <ContactForm
-        contactType="member"
-        title="Solicitud de membresía"
-        description="Completa el formulario para unirte a nuestra comunidad"
-      />
-    </div>
-  </section>
-);
-
-const LeaderContactPage = () => (
-  <section id="contacto" className="section contact-section">
-    <div className="contact-grid">
-      <div className="contact-copy">
-        <h2>Lidera el crecimiento</h2>
-        <p>¿Quieres ser parte del equipo que organiza eventos y lidera el crecimiento de la comunidad?</p>
-        <ul>
-          <li>Organiza eventos y meetups</li>
-          <li>Lidera iniciativas de crecimiento comunitario</li>
-          <li>Colabora en la estrategia de la comunidad</li>
-          <li>Ayuda a otros desarrolladores a crecer</li>
-        </ul>
-      </div>
-      <ContactForm
-        contactType="leader"
-        title="Solicitud para ser líder"
-        description="Comparte con nosotros tu interés en liderar la comunidad"
-      />
-    </div>
-  </section>
-);
-
-const SpeakerContactPage = () => (
-  <section id="contacto" className="section contact-section">
-    <div className="contact-grid">
-      <div className="contact-copy">
-        <h2>Comparte tu conocimiento</h2>
-        <p>¿Tienes experiencia y quieres compartirla con la comunidad?</p>
-        <ul>
-          <li>Da charlas y talleres ocasionales</li>
-          <li>Comparte tu experiencia técnica</li>
-          <li>Ayuda a otros a aprender</li>
-          <li>Colabora en eventos y webinars</li>
-        </ul>
-      </div>
-      <ContactForm
-        contactType="speaker"
-        title="Solicitud para ser speaker"
-        description="Cuéntanos sobre ti y los temas que te gustaría compartir"
-      />
-    </div>
-  </section>
-);
-
-const BusinessContactPage = () => (
-  <section id="contacto" className="section contact-section">
-    <div className="contact-grid">
-      <div className="contact-copy">
-        <h2>Patrocina la comunidad</h2>
-        <p>¿Tu empresa quiere apoyar el crecimiento de la comunidad tech en México?</p>
-        <ul>
-          <li>Patrocinio de eventos y webinars</li>
-          <li>Colaboraciones estratégicas</li>
-          <li>Oportunidades de networking</li>
-          <li>Apoyo al ecosistema tech mexicano</li>
-        </ul>
-      </div>
-      <ContactForm
-        contactType="business"
-        title="Solicitud de patrocinio"
-        description="Hablemos sobre cómo podemos colaborar juntos"
-      />
-    </div>
-  </section>
-);
+const MemberContactPage = () => <ContactPageLayout contactType="member" />;
+const LeaderContactPage = () => <ContactPageLayout contactType="leader" />;
+const SpeakerContactPage = () => <ContactPageLayout contactType="speaker" />;
+const BusinessContactPage = () => <ContactPageLayout contactType="business" />;
 
 const CursosPage = () => (
   <section id="info" className="section info-section">

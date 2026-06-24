@@ -4,6 +4,7 @@ export const LIMITS = {
   name: 100,
   email: 254,
   mobile: 20,
+  talkTitle: 200,
   message: 2000,
 };
 
@@ -22,6 +23,7 @@ export const validateContactForm = ({
   name,
   email,
   mobile,
+  talkTitle,
   message,
   turnstileToken,
   turnstileRequired,
@@ -47,6 +49,16 @@ export const validateContactForm = ({
     if (!PHONE_PATTERN.test(cleanMobile)) return 'Por favor ingresa un teléfono válido';
   }
 
+  const cleanTalkTitle = sanitizeField(talkTitle);
+  if (contactType === 'speaker') {
+    if (!cleanTalkTitle) return 'El título de la charla es requerido';
+    if (cleanTalkTitle.length > LIMITS.talkTitle) return 'El título de la charla es demasiado largo';
+    if (SCRIPT_PATTERN.test(cleanTalkTitle)) return 'El título contiene contenido no permitido';
+  } else if (cleanTalkTitle) {
+    if (cleanTalkTitle.length > LIMITS.talkTitle) return 'El título de la charla es demasiado largo';
+    if (SCRIPT_PATTERN.test(cleanTalkTitle)) return 'El título contiene contenido no permitido';
+  }
+
   const cleanMessage = sanitizeField(message);
   if (!cleanMessage) return 'El mensaje es requerido';
   if (cleanMessage.length > LIMITS.message) return 'El mensaje es demasiado largo';
@@ -64,6 +76,7 @@ export const buildContactPayload = ({
   name,
   email,
   mobile,
+  talkTitle,
   message,
   turnstileToken,
 }) => ({
@@ -71,6 +84,7 @@ export const buildContactPayload = ({
   name: sanitizeField(name),
   email: sanitizeField(email).toLowerCase(),
   mobile: sanitizeField(mobile),
+  ...(sanitizeField(talkTitle) ? { talkTitle: sanitizeField(talkTitle) } : {}),
   message: sanitizeField(message),
   ...(turnstileToken ? { turnstileToken: sanitizeField(turnstileToken) } : {}),
 });
