@@ -286,14 +286,8 @@ Resources:
       - ContactVerifyOptionsMethod
     Properties:
       RestApiId: !Ref ContactFormApi
-      Description: !Sub '${ProjectName} contact API including verification routes'
-
-  ContactFormApiStage:
-    Type: AWS::ApiGateway::Stage
-    Properties:
-      RestApiId: !Ref ContactFormApi
-      DeploymentId: !Ref ContactFormApiDeployment
       StageName: prod
+      Description: !Sub '${ProjectName} contact API including verification routes'
 
   ApiOriginGateFunction:
     Type: AWS::CloudFront::Function
