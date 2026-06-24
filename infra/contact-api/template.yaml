@@ -85,6 +85,28 @@ Resources:
         - Key: project
           Value: !Ref ProjectName
 
+  ContactVerificationTokensTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${ProjectName}-contact-verification-tokens'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: sk
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+        - AttributeName: sk
+          KeyType: RANGE
+      TimeToLiveSpecification:
+        AttributeName: expiresAt
+        Enabled: true
+      Tags:
+        - Key: project
+          Value: !Ref ProjectName
+
   ContactFormHandler:
     Type: AWS::Serverless::Function
     Properties:
@@ -97,6 +119,7 @@ Resources:
       Environment:
         Variables:
           TABLE_NAME: !Ref ContactSubmissionsTable
+          TOKENS_TABLE_NAME: !Ref ContactVerificationTokensTable
           ALLOWED_ORIGIN: !Ref AllowedOrigin
           ORIGIN_VERIFY_SECRET: !Ref OriginVerifySecret
           TURNSTILE_SECRET_KEY: !Ref TurnstileSecretKey
@@ -121,6 +144,20 @@ Resources:
       RestApiId: !Ref ContactFormApi
       ParentId: !GetAtt ContactFormApi.RootResourceId
       PathPart: contact
+
+  ContactRequestResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref ContactFormApi
+      ParentId: !Ref ContactResource
+      PathPart: request
+
+  ContactVerifyResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref ContactFormApi
+      ParentId: !Ref ContactResource
+      PathPart: verify
 
   ContactOptionsMethod:
     Type: AWS::ApiGateway::Method
@@ -158,6 +195,78 @@ Resources:
         IntegrationHttpMethod: POST
         Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ContactFormHandler.Arn}/invocations'
 
+  ContactRequestOptionsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ContactFormApi
+      ResourceId: !Ref ContactRequestResource
+      HttpMethod: OPTIONS
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: !Sub "'${AllowedOrigin}'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Requested-With'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+  ContactRequestPostMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ContactFormApi
+      ResourceId: !Ref ContactRequestResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ContactFormHandler.Arn}/invocations'
+
+  ContactVerifyOptionsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ContactFormApi
+      ResourceId: !Ref ContactVerifyResource
+      HttpMethod: OPTIONS
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: !Sub "'${AllowedOrigin}'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Requested-With'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+  ContactVerifyPostMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ContactFormApi
+      ResourceId: !Ref ContactVerifyResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ContactFormHandler.Arn}/invocations'
+
   ContactFormLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -171,6 +280,10 @@ Resources:
     DependsOn:
       - ContactPostMethod
       - ContactOptionsMethod
+      - ContactRequestPostMethod
+      - ContactRequestOptionsMethod
+      - ContactVerifyPostMethod
+      - ContactVerifyOptionsMethod
     Properties:
       RestApiId: !Ref ContactFormApi
       StageName: prod
@@ -286,5 +399,7 @@ Outputs:
     Value: !Ref ApiCloudFrontDistribution
   DynamoDBTableName:
     Value: !Ref ContactSubmissionsTable
+  VerificationTokensTableName:
+    Value: !Ref ContactVerificationTokensTable
   LambdaFunctionArn:
     Value: !GetAtt ContactFormHandler.Arn

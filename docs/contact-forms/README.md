@@ -79,14 +79,36 @@ México in Tech has four contact profiles, each with its own route, copy, benefi
 | `message` | ✓ | ✓ | ✓ | ✓ | Yes |
 | Turnstile | ✓ | ✓ | ✓ | ✓ | When configured |
 
-Submissions are sent to `POST https://api.mxintech.org/contact` with header `X-Requested-With: MxintechWebsite`.
+## Email verification (2FA)
+
+Submissions require a **two-step flow** (same pattern as [invitadoestas](https://invitadoestas.com)):
+
+1. **`POST /contact/request`** — Validates the form, applies rate limits, sends a 6-digit code to the user's email, and stores the pending payload in DynamoDB (hashed token, 15-minute TTL).
+2. **`POST /contact/verify`** — User submits `{ email, token, contactType }`. On success the submission is saved to DynamoDB and confirmation/notification emails are sent.
+
+### Limits
+
+| Limit | Default |
+|-------|---------|
+| Code TTL | 15 minutes |
+| Resend per email | 1 request / 60 seconds |
+| Verify attempts per code | 5 |
+| Submissions per email / day | 3 |
+| Request attempts per IP / hour | 5 |
+| Verify attempts per IP / hour | 15 |
+| Global outbound emails / day | 200 |
+
+Pending tokens and rate-limit counters live in `mxintech-website-contact-verification-tokens` (TTL on `expiresAt`).
+
+Submissions are sent to `POST https://api.mxintech.org/contact/request` then `POST https://api.mxintech.org/contact/verify` with header `X-Requested-With: MxintechWebsite`.
 
 ## Backend
 
 Validation and persistence live in [`infra/contact-api/src/handler.py`](../../infra/contact-api/src/handler.py).
 
 - DynamoDB item includes all submitted fields (`talkTitle` stored when present).
-- SES confirmation and team notification emails include phone (or “No proporcionado”) and talk title for speaker submissions.
+- SES confirmation and team notification emails are sent **after** email verification succeeds.
+- Verification tokens table: `mxintech-website-contact-verification-tokens`.
 
 After changing handler logic, deploy with **AWS deploy → contact-api**. After frontend/copy changes, run **Frontend publish**.
 

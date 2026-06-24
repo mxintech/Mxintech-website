@@ -39,6 +39,12 @@
   border: 1px solid #f5c6cb;
 }
 
+.form-message-info {
+  background-color: #e8f4fd;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+}
+
 .form-group {
   display: flex;
   flex-direction: column;
@@ -213,6 +219,40 @@
 
 [data-theme="dark"] .contact-form-submit:hover:not(:disabled) {
   box-shadow: 0 10px 24px rgba(var(--mx-pink-rgb), 0.45);
+}
+
+.contact-form-otp-input {
+  letter-spacing: 0.35em;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.contact-form-verify-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.contact-form-secondary-action {
+  background: transparent;
+  border: none;
+  color: var(--contact-accent, var(--mx-blue));
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.contact-form-secondary-action:hover:not(:disabled) {
+  color: var(--mx-pink);
+}
+
+.contact-form-secondary-action:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 @media (prefers-reduced-motion: reduce) {
