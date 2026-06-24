@@ -186,6 +186,50 @@
         "acm:ListCertificates"
       ],
       "Resource": "arn:aws:acm:us-east-1:401202591305:certificate/3b434445-b0a5-456c-be8f-5f5c4727d963"
+    },
+    {
+      "Sid": "ContactApiMonitoringResources",
+      "Effect": "Allow",
+      "Action": [
+        "cloudwatch:PutMetricAlarm",
+        "cloudwatch:DeleteAlarms",
+        "cloudwatch:DescribeAlarms",
+        "cloudwatch:PutDashboard",
+        "cloudwatch:DeleteDashboards",
+        "cloudwatch:GetDashboard",
+        "cloudwatch:ListDashboards",
+        "logs:PutMetricFilter",
+        "logs:DeleteMetricFilter",
+        "logs:DescribeMetricFilters",
+        "logs:CreateLogGroup",
+        "logs:PutRetentionPolicy",
+        "logs:DeleteLogGroup",
+        "logs:DescribeLogGroups",
+        "logs:TagLogGroup",
+        "sns:CreateTopic",
+        "sns:DeleteTopic",
+        "sns:Subscribe",
+        "sns:Unsubscribe",
+        "sns:SetTopicAttributes",
+        "sns:GetTopicAttributes",
+        "sns:AddPermission",
+        "sns:RemovePermission",
+        "sns:TagResource",
+        "sns:ListTagsForResource",
+        "ses:CreateConfigurationSet",
+        "ses:DeleteConfigurationSet",
+        "ses:CreateConfigurationSetEventDestination",
+        "ses:DeleteConfigurationSetEventDestination",
+        "ses:UpdateConfigurationSetEventDestination",
+        "ses:GetConfigurationSet",
+        "ses:ListConfigurationSets"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
     }
   ]
 }

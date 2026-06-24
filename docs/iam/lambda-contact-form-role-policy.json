@@ -9,7 +9,10 @@
         "logs:CreateLogStream",
         "logs:PutLogEvents"
       ],
-      "Resource": "arn:aws:logs:us-east-1:401202591305:log-group:/aws/lambda/mxintech-website-contact-form-handler:*"
+      "Resource": [
+        "arn:aws:logs:us-east-1:401202591305:log-group:/aws/lambda/mxintech-website-contact-form-handler:*",
+        "arn:aws:logs:us-east-1:401202591305:log-group:/aws/lambda/mxintech-website-ses-feedback:*"
+      ]
     },
     {
       "Sid": "ContactSubmissionsTableReadWrite",

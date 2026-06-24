@@ -46,6 +46,21 @@ Parameters:
     Type: String
     Default: arn:aws:iam::401202591305:role/mxintech-website-lambda-contract-form-role
     Description: Pre-created Lambda execution role. See docs/iam/README.md.
+  AlertNotificationEmail:
+    Type: String
+    Default: contacto@mxintech.org
+    Description: Email address subscribed to CloudWatch alarm notifications.
+  FrontendCloudFrontDistributionId:
+    Type: String
+    Default: E3GWK6OJ2D9DKH
+    Description: Website CloudFront distribution ID for the operations dashboard.
+  LogRetentionDays:
+    Type: Number
+    Default: 14
+    Description: CloudWatch log retention for contact API Lambdas.
+
+Conditions:
+  HasAlertEmail: !Not [!Equals [!Ref AlertNotificationEmail, '']]
 
 Resources:
   ApiCertificate:
@@ -128,6 +143,8 @@ Resources:
           NOTIFICATION_EMAIL: !Ref NotificationEmail
           REQUESTED_WITH_HEADER: MxintechWebsite
           FRONTEND_CLOUDFRONT_DOMAIN: !Ref FrontendCloudFrontDomainName
+          SES_CONFIGURATION_SET: !Ref SesConfigurationSet
+          MAX_OTP_REQUESTS_PER_EMAIL_PER_DAY: '5'
 
   ContactFormApi:
     Type: AWS::ApiGateway::RestApi
@@ -387,6 +404,359 @@ Resources:
         DNSName: !GetAtt ApiCloudFrontDistribution.DomainName
         HostedZoneId: Z2FDTNDATAQYW2
 
+  ContactFormLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ProjectName}-contact-form-handler'
+      RetentionInDays: !Ref LogRetentionDays
+
+  SesFeedbackLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ProjectName}-ses-feedback'
+      RetentionInDays: !Ref LogRetentionDays
+
+  AlertNotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub '${ProjectName}-alerts'
+      Tags:
+        - Key: project
+          Value: !Ref ProjectName
+
+  AlertNotificationSubscription:
+    Type: AWS::SNS::Subscription
+    Condition: HasAlertEmail
+    Properties:
+      TopicArn: !Ref AlertNotificationTopic
+      Protocol: email
+      Endpoint: !Ref AlertNotificationEmail
+
+  SesConfigurationSet:
+    Type: AWS::SES::ConfigurationSet
+    Properties:
+      Name: !Sub '${ProjectName}-transactional'
+
+  SesFeedbackTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub '${ProjectName}-ses-feedback'
+      Tags:
+        - Key: project
+          Value: !Ref ProjectName
+
+  SesFeedbackTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics:
+        - !Ref SesFeedbackTopic
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowAccountOwner
+            Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action:
+              - SNS:GetTopicAttributes
+              - SNS:SetTopicAttributes
+              - SNS:Subscribe
+              - SNS:ListSubscriptionsByTopic
+              - SNS:Publish
+            Resource: !Ref SesFeedbackTopic
+          - Sid: AllowSesPublish
+            Effect: Allow
+            Principal:
+              Service: ses.amazonaws.com
+            Action: SNS:Publish
+            Resource: !Ref SesFeedbackTopic
+            Condition:
+              StringEquals:
+                AWS:SourceAccount: !Ref AWS::AccountId
+
+  SesFeedbackEmailSubscription:
+    Type: AWS::SNS::Subscription
+    Condition: HasAlertEmail
+    Properties:
+      TopicArn: !Ref SesFeedbackTopic
+      Protocol: email
+      Endpoint: !Ref AlertNotificationEmail
+
+  SesFeedbackFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub '${ProjectName}-ses-feedback'
+      Runtime: python3.12
+      Handler: ses_feedback.handler
+      CodeUri: src/
+      Timeout: 30
+      Role: !Ref ContactFormLambdaRoleArn
+      Environment:
+        Variables:
+          TOKENS_TABLE_NAME: !Ref ContactVerificationTokensTable
+
+  SesFeedbackTopicLambdaSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref SesFeedbackTopic
+      Protocol: lambda
+      Endpoint: !GetAtt SesFeedbackFunction.Arn
+
+  SesFeedbackFunctionInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref SesFeedbackFunction
+      Principal: sns.amazonaws.com
+      SourceArn: !Ref SesFeedbackTopic
+
+  SesFeedbackEventDestination:
+    Type: AWS::SES::ConfigurationSetEventDestination
+    Properties:
+      ConfigurationSetName: !Ref SesConfigurationSet
+      EventDestination:
+        Name: !Sub '${ProjectName}-ses-feedback-sns'
+        Enabled: true
+        MatchingEventTypes:
+          - bounce
+          - complaint
+          - reject
+        SnsDestination:
+          TopicARN: !Ref SesFeedbackTopic
+
+  ContactLambdaErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ProjectName}-contact-lambda-errors'
+      AlarmDescription: Contact form Lambda reported function errors.
+      AlarmActions:
+        - !Ref AlertNotificationTopic
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ContactFormHandler
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 3
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+
+  ContactApi5xxAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ProjectName}-contact-api-5xx'
+      AlarmDescription: Contact API Gateway is returning server errors.
+      AlarmActions:
+        - !Ref AlertNotificationTopic
+      Namespace: AWS/ApiGateway
+      MetricName: 5XXError
+      Dimensions:
+        - Name: ApiName
+          Value: !Sub '${ProjectName}-contact-api'
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 5
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+
+  ContactApiAbuseAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ProjectName}-contact-api-abuse'
+      AlarmDescription: Sustained 4xx volume on the contact API suggests abuse or OTP spam.
+      AlarmActions:
+        - !Ref AlertNotificationTopic
+      Namespace: AWS/ApiGateway
+      MetricName: 4XXError
+      Dimensions:
+        - Name: ApiName
+          Value: !Sub '${ProjectName}-contact-api'
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 120
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+
+  EmailCapExhaustedMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    DependsOn: ContactFormLogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ProjectName}-contact-form-handler'
+      FilterPattern: '{ $.contactEvent = "email_cap_exhausted" }'
+      MetricTransformations:
+        - MetricNamespace: MxintechWebsite
+          MetricName: EmailCapExhausted
+          MetricValue: '1'
+          DefaultValue: 0
+
+  OtpDailyLimitMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    DependsOn: ContactFormLogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ProjectName}-contact-form-handler'
+      FilterPattern: '{ $.contactEvent = "otp_daily_limit_exceeded" }'
+      MetricTransformations:
+        - MetricNamespace: MxintechWebsite
+          MetricName: OtpDailyLimitExceeded
+          MetricValue: '1'
+          DefaultValue: 0
+
+  OtpRateLimitMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    DependsOn: ContactFormLogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ProjectName}-contact-form-handler'
+      FilterPattern: '{ $.contactEvent = "otp_request_rate_limited" }'
+      MetricTransformations:
+        - MetricNamespace: MxintechWebsite
+          MetricName: OtpRequestRateLimited
+          MetricValue: '1'
+          DefaultValue: 0
+
+  DeliverabilityBlockedMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    DependsOn: ContactFormLogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ProjectName}-contact-form-handler'
+      FilterPattern: '{ $.contactEvent = "deliverability_blocked" }'
+      MetricTransformations:
+        - MetricNamespace: MxintechWebsite
+          MetricName: DeliverabilityBlocked
+          MetricValue: '1'
+          DefaultValue: 0
+
+  VerifySucceededMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    DependsOn: ContactFormLogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ProjectName}-contact-form-handler'
+      FilterPattern: '{ $.contactEvent = "verify_succeeded" }'
+      MetricTransformations:
+        - MetricNamespace: MxintechWebsite
+          MetricName: ContactVerifySucceeded
+          MetricValue: '1'
+          DefaultValue: 0
+
+  SesBouncePermanentMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    DependsOn: SesFeedbackLogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ProjectName}-ses-feedback'
+      FilterPattern: '{ $.contactEvent = "ses_bounce_permanent" }'
+      MetricTransformations:
+        - MetricNamespace: MxintechWebsite
+          MetricName: SesBouncePermanent
+          MetricValue: '$.count'
+          DefaultValue: 0
+
+  SesComplaintMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    DependsOn: SesFeedbackLogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ProjectName}-ses-feedback'
+      FilterPattern: '{ $.contactEvent = "ses_complaint" }'
+      MetricTransformations:
+        - MetricNamespace: MxintechWebsite
+          MetricName: SesComplaint
+          MetricValue: '$.count'
+          DefaultValue: 0
+
+  EmailCapExhaustedAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ProjectName}-email-cap-exhausted'
+      AlarmDescription: Daily outbound email budget exhausted — possible SES abuse.
+      AlarmActions:
+        - !Ref AlertNotificationTopic
+      Namespace: MxintechWebsite
+      MetricName: EmailCapExhausted
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+
+  OtpAbuseAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ProjectName}-otp-abuse'
+      AlarmDescription: Repeated OTP daily-limit blocks suggest 2FA code spam.
+      AlarmActions:
+        - !Ref AlertNotificationTopic
+      Namespace: MxintechWebsite
+      MetricName: OtpDailyLimitExceeded
+      Statistic: Sum
+      Period: 900
+      EvaluationPeriods: 1
+      Threshold: 10
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+
+  SesBounceRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ProjectName}-ses-bounce-rate'
+      AlarmDescription: SES bounce rate above 5% — sender reputation at risk.
+      AlarmActions:
+        - !Ref AlertNotificationTopic
+      Namespace: AWS/SES
+      MetricName: Reputation.BounceRate
+      Statistic: Average
+      Period: 3600
+      EvaluationPeriods: 1
+      Threshold: 0.05
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+
+  SesComplaintRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ProjectName}-ses-complaint-rate'
+      AlarmDescription: SES complaint rate above 0.1%.
+      AlarmActions:
+        - !Ref AlertNotificationTopic
+      Namespace: AWS/SES
+      MetricName: Reputation.ComplaintRate
+      Statistic: Average
+      Period: 3600
+      EvaluationPeriods: 1
+      Threshold: 0.001
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+
+  SesBounceVolumeAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ProjectName}-ses-bounce-volume'
+      AlarmDescription: More than 10 permanent bounces in 30 minutes.
+      AlarmActions:
+        - !Ref AlertNotificationTopic
+      Namespace: MxintechWebsite
+      MetricName: SesBouncePermanent
+      Statistic: Sum
+      Period: 1800
+      EvaluationPeriods: 1
+      Threshold: 10
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+
+  OperationsDashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: !Sub '${ProjectName}-operations'
+      DashboardBody: !Sub
+        - |
+          {"widgets":[{"type":"text","x":0,"y":0,"width":24,"height":2,"properties":{"markdown":"# México in Tech operations\nWebsite edge, contact API, Lambda health, OTP abuse signals, and SES reputation for **${ProjectName}**."}},{"type":"alarm","x":0,"y":2,"width":24,"height":4,"properties":{"title":"Active alarms","alarms":["arn:aws:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:${ProjectName}-contact-lambda-errors","arn:aws:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:${ProjectName}-contact-api-5xx","arn:aws:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:${ProjectName}-contact-api-abuse","arn:aws:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:${ProjectName}-email-cap-exhausted","arn:aws:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:${ProjectName}-otp-abuse","arn:aws:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:${ProjectName}-ses-bounce-rate","arn:aws:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:${ProjectName}-ses-complaint-rate","arn:aws:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:${ProjectName}-ses-bounce-volume"]}},{"type":"metric","x":0,"y":6,"width":12,"height":6,"properties":{"title":"Contact API requests","view":"timeSeries","region":"${AWS::Region}","period":300,"stat":"Sum","metrics":[["AWS/ApiGateway","Count","ApiName","${ProjectName}-contact-api"],[".","4XXError",".","."],[".","5XXError",".","."]]}},{"type":"metric","x":12,"y":6,"width":12,"height":6,"properties":{"title":"Contact Lambda","view":"timeSeries","region":"${AWS::Region}","period":300,"metrics":[["AWS/Lambda","Invocations","FunctionName","${ProjectName}-contact-form-handler",{"stat":"Sum","yAxis":"right"}],[".","Errors",".",".",{"stat":"Sum","color":"#d62728"}],[".","Duration",".",".",{"stat":"p99","yAxis":"left"}]]}},{"type":"metric","x":0,"y":12,"width":12,"height":6,"properties":{"title":"Website CloudFront","view":"timeSeries","region":"us-east-1","period":300,"stat":"Sum","metrics":[["AWS/CloudFront","Requests","DistributionId","${FrontendCfId}","Region","Global"],[".","4xxErrorRate",".",".",".",".",{"stat":"Average","yAxis":"right"}],[".","5xxErrorRate",".",".",".",".",{"stat":"Average","yAxis":"right"}]]}},{"type":"metric","x":12,"y":12,"width":12,"height":6,"properties":{"title":"API CloudFront","view":"timeSeries","region":"us-east-1","period":300,"stat":"Sum","metrics":[["AWS/CloudFront","Requests","DistributionId","${ApiCfId}","Region","Global"],[".","4xxErrorRate",".",".",".",".",{"stat":"Average","yAxis":"right"}],[".","5xxErrorRate",".",".",".",".",{"stat":"Average","yAxis":"right"}]]}},{"type":"metric","x":0,"y":18,"width":12,"height":6,"properties":{"title":"OTP & abuse signals","view":"timeSeries","region":"${AWS::Region}","period":300,"stat":"Sum","metrics":[["MxintechWebsite","OtpRequestRateLimited",{"color":"#ff7f0e"}],[".","OtpDailyLimitExceeded",{"color":"#d62728"}],[".","DeliverabilityBlocked",{"color":"#9467bd"}],[".","EmailCapExhausted"],[".","ContactVerifySucceeded",{"color":"#2ca02c"}]]}},{"type":"metric","x":12,"y":18,"width":12,"height":6,"properties":{"title":"SES reputation & feedback","view":"timeSeries","region":"${AWS::Region}","period":3600,"metrics":[["AWS/SES","Send","ConfigurationSetName","${ProjectName}-transactional",{"stat":"Sum","yAxis":"right"}],["AWS/SES","Reputation.BounceRate",{"stat":"Average","yAxis":"left"}],[".","Reputation.ComplaintRate",{"stat":"Average","yAxis":"left"}],["MxintechWebsite","SesBouncePermanent",{"stat":"Sum","period":300,"yAxis":"right"}],[".","SesComplaint",{"stat":"Sum","period":300,"yAxis":"right"}]]}},{"type":"log","x":0,"y":24,"width":24,"height":6,"properties":{"title":"Recent contact security events","region":"${AWS::Region}","view":"table","query":"SOURCE '${LogGroup}' | filter ispresent(contactEvent) | fields @timestamp, contactEvent, email, ip, reason | sort @timestamp desc | limit 40"}}]}
+        - ProjectName: !Ref ProjectName
+          FrontendCfId: !Ref FrontendCloudFrontDistributionId
+          ApiCfId: !Ref ApiCloudFrontDistribution
+          LogGroup: !Sub '/aws/lambda/${ProjectName}-contact-form-handler'
+
 Outputs:
   ApiEndpoint:
     Description: Direct API Gateway endpoint (prefer CloudFront domain in production)
@@ -404,3 +774,11 @@ Outputs:
     Value: !Ref ContactVerificationTokensTable
   LambdaFunctionArn:
     Value: !GetAtt ContactFormHandler.Arn
+  OperationsDashboardName:
+    Value: !Sub '${ProjectName}-operations'
+  OperationsDashboardUrl:
+    Value: !Sub 'https://${AWS::Region}.console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#dashboards/dashboard/${ProjectName}-operations'
+  AlertNotificationTopicArn:
+    Value: !Ref AlertNotificationTopic
+  SesConfigurationSetName:
+    Value: !Ref SesConfigurationSet

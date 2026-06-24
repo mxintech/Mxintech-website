@@ -14,6 +14,19 @@ from datetime import datetime, timedelta, timezone
 import boto3
 from botocore.exceptions import ClientError
 
+from contact_events import is_opted_out, log_api_route, log_contact_event
+from email_deliverability import validate_deliverable_email
+from email_templates import (
+    build_confirmation_email_html,
+    build_confirmation_email_text,
+    build_notification_email_html,
+    build_notification_email_text,
+    build_otp_email_html,
+    build_otp_email_text,
+    build_submission_summary_html,
+    build_submission_summary_text,
+)
+
 dynamodb = boto3.resource('dynamodb')
 ses = boto3.client('ses')
 
@@ -25,6 +38,7 @@ TOKENS_TABLE_NAME = os.environ['TOKENS_TABLE_NAME']
 SES_IDENTITY_ARN = os.environ.get('SES_IDENTITY_ARN', '')
 SES_SENDER_EMAIL = os.environ.get('SES_SENDER_EMAIL', 'noreply@mxintech.org')
 NOTIFICATION_EMAIL = os.environ.get('NOTIFICATION_EMAIL', '')
+SES_CONFIGURATION_SET = os.environ.get('SES_CONFIGURATION_SET', '')
 REQUESTED_WITH = os.environ.get('REQUESTED_WITH_HEADER', 'MxintechWebsite')
 FRONTEND_CLOUDFRONT_DOMAIN = os.environ.get('FRONTEND_CLOUDFRONT_DOMAIN', '')
 
@@ -33,6 +47,7 @@ REQUEST_RATE_LIMIT_SECONDS = int(os.environ.get('REQUEST_RATE_LIMIT_SECONDS', '6
 IP_RATE_LIMIT_WINDOW_SECONDS = int(os.environ.get('IP_RATE_LIMIT_WINDOW_SECONDS', '3600'))
 MAX_VERIFY_ATTEMPTS = int(os.environ.get('MAX_VERIFY_ATTEMPTS', '5'))
 MAX_SUBMISSIONS_PER_EMAIL_PER_DAY = int(os.environ.get('MAX_SUBMISSIONS_PER_EMAIL_PER_DAY', '3'))
+MAX_OTP_REQUESTS_PER_EMAIL_PER_DAY = int(os.environ.get('MAX_OTP_REQUESTS_PER_EMAIL_PER_DAY', '5'))
 SES_DAILY_SEND_LIMIT = int(os.environ.get('SES_DAILY_SEND_LIMIT', '200'))
 
 IP_RATE_LIMITS = {
@@ -239,6 +254,35 @@ def reserve_daily_submission(email):
         raise
 
 
+def reserve_daily_otp_request(email):
+    today = datetime.now(timezone.utc).strftime('%Y%m%d')
+    expires_at = int(datetime.now(timezone.utc).timestamp()) + 2 * 86400
+    try:
+        tokens_table().update_item(
+            Key={'pk': f'OTPREQ#{email}', 'sk': today},
+            UpdateExpression='ADD requestCount :one SET expiresAt = if_not_exists(expiresAt, :exp)',
+            ConditionExpression='attribute_not_exists(requestCount) OR requestCount < :max',
+            ExpressionAttributeValues={
+                ':one': 1,
+                ':exp': expires_at,
+                ':max': MAX_OTP_REQUESTS_PER_EMAIL_PER_DAY,
+            },
+        )
+        return False
+    except ClientError as error:
+        if error.response['Error']['Code'] == 'ConditionalCheckFailedException':
+            return True
+        raise
+
+
+def deliverability_message(error_code):
+    if error_code == 'Disposable email addresses are not allowed.':
+        return 'No se permiten correos temporales o desechables.'
+    if error_code == 'This email domain cannot receive mail.':
+        return 'El dominio de correo no puede recibir mensajes.'
+    return 'El correo electrónico no puede recibir mensajes.'
+
+
 def sanitize_text(value, field_name, max_length, pattern=None):
     if not isinstance(value, str):
         raise ValueError(f'{field_name} is invalid')
@@ -301,34 +345,48 @@ def validate_payload(body):
     }
 
 
-def send_email_safe(source, destination, subject, text_body):
+def send_email_safe(source, destination, subject, text_body, html_body=None, reply_to=None):
     if not SES_IDENTITY_ARN:
         print('SES identity not configured; skipping email send')
-        return
+        return {'suppressed': True, 'reason': 'ses_not_configured'}
 
-    ses.send_email(
-        Source=source,
-        Destination={'ToAddresses': [destination]},
-        Message={
+    if is_opted_out(destination):
+        log_contact_event('email_send_suppressed', email=destination, reason='opted_out')
+        return {'suppressed': True, 'reason': 'opted_out'}
+
+    body = {'Text': {'Data': text_body, 'Charset': 'UTF-8'}}
+    if html_body:
+        body['Html'] = {'Data': html_body, 'Charset': 'UTF-8'}
+
+    message = {
+        'Source': source,
+        'Destination': {'ToAddresses': [destination]},
+        'Message': {
             'Subject': {'Data': subject, 'Charset': 'UTF-8'},
-            'Body': {'Text': {'Data': text_body, 'Charset': 'UTF-8'}},
+            'Body': body,
         },
-    )
+    }
+    if reply_to:
+        message['ReplyToAddresses'] = [reply_to]
+    if SES_CONFIGURATION_SET:
+        message['ConfigurationSetName'] = SES_CONFIGURATION_SET
+
+    ses.send_email(**message)
+    return {'sent': True}
+
+
+def site_origin():
+    return ALLOWED_ORIGIN.rstrip('/')
 
 
 def send_verification_code_email(email, code):
+    origin = site_origin()
     send_email_safe(
         SES_SENDER_EMAIL,
         email,
         'México in Tech: código de verificación',
-        (
-            f'Hola,\n\n'
-            f'Tu código de verificación para enviar el formulario de contacto es:\n\n'
-            f'  {code}\n\n'
-            f'Este código expira en {VERIFY_TOKEN_TTL_MINUTES} minutos.\n'
-            f'Si tú no solicitaste enviar un formulario en mxintech.org, ignora este correo.\n\n'
-            f'Saludos,\nEl equipo de México in Tech'
-        ),
+        build_otp_email_text(code, VERIFY_TOKEN_TTL_MINUTES),
+        html_body=build_otp_email_html(origin, code, VERIFY_TOKEN_TTL_MINUTES),
     )
 
 
@@ -349,35 +407,20 @@ def persist_submission(payload, source_ip):
     )
 
     safe_name = html.escape(payload['name'])
-    phone_display = payload['mobile'] or 'No proporcionado'
-    talk_title_line = (
-        f'- Charla propuesta: {payload["talkTitle"]}\n'
-        if payload.get('talkTitle')
-        else ''
-    )
-    talk_title_block = (
-        f'Charla propuesta: {payload["talkTitle"]}\n'
-        if payload.get('talkTitle')
-        else ''
-    )
 
     if SES_IDENTITY_ARN:
         try:
+            summary_lines = build_submission_summary_text(payload, type_name)
             send_email_safe(
                 SES_SENDER_EMAIL,
                 payload['email'],
                 f'Confirmación: solicitud recibida - {type_name}',
-                (
-                    f'Hola {safe_name},\n\n'
-                    f'Gracias por contactar a México in Tech. Recibimos tu solicitud como {type_name.lower()}.\n'
-                    f'Nos pondremos en contacto contigo pronto.\n\n'
-                    f'Resumen:\n'
-                    f'- Tipo: {type_name}\n'
-                    f'- Email: {payload["email"]}\n'
-                    f'- Teléfono: {phone_display}\n'
-                    f'{talk_title_line}\n'
-                    f'Mensaje:\n{payload["message"]}\n\n'
-                    f'Saludos,\nEl equipo de México in Tech'
+                build_confirmation_email_text(payload['name'], type_name, summary_lines),
+                html_body=build_confirmation_email_html(
+                    site_origin(),
+                    safe_name,
+                    type_name,
+                    build_submission_summary_html(payload, type_name),
                 ),
             )
 
@@ -386,18 +429,19 @@ def persist_submission(payload, source_ip):
                     SES_SENDER_EMAIL,
                     NOTIFICATION_EMAIL,
                     f'Nueva solicitud de contacto ({type_name})',
-                    (
-                        f'Nueva solicitud recibida.\n\n'
-                        f'ID: {submission_id}\n'
-                        f'Tipo: {type_name}\n'
-                        f'Nombre: {payload["name"]}\n'
-                        f'Email: {payload["email"]}\n'
-                        f'Teléfono: {phone_display}\n'
-                        f'{talk_title_block}'
-                        f'IP: {source_ip}\n'
-                        f'Fecha: {timestamp}\n\n'
-                        f'Mensaje:\n{payload["message"]}'
+                    build_notification_email_text(
+                        type_name, submission_id, payload, source_ip, timestamp,
                     ),
+                    html_body=build_notification_email_html(
+                        site_origin(),
+                        type_name,
+                        submission_id,
+                        payload,
+                        source_ip,
+                        timestamp,
+                        payload['email'],
+                    ),
+                    reply_to=payload['email'],
                 )
         except ClientError as error:
             print(f'SES error: {error}')
@@ -407,8 +451,10 @@ def persist_submission(payload, source_ip):
 
 def handle_contact_request(event):
     source_ip = get_source_ip(event)
+    log_api_route('POST', '/contact/request')
 
     if check_ip_rate_limit(source_ip, 'REQUEST'):
+        log_contact_event('otp_request_rate_limited', ip=source_ip, scope='ip')
         return response(429, {'message': 'Demasiadas solicitudes. Intenta de nuevo más tarde.'})
 
     try:
@@ -420,16 +466,34 @@ def handle_contact_request(event):
         payload = validate_payload(body)
 
         if not verify_turnstile_token(payload.pop('turnstileToken', ''), source_ip):
+            log_contact_event('turnstile_failed', ip=source_ip)
             return response(400, {'message': 'Verificación anti-bots fallida. Recarga e intenta de nuevo.'})
 
         email = payload['email']
 
+        if is_opted_out(email):
+            log_contact_event('otp_request_blocked', email=email, ip=source_ip, reason='opted_out')
+            return response(400, {'message': deliverability_message('This email domain cannot receive mail.')})
+
+        deliverability_error = validate_deliverable_email(email)
+        if deliverability_error:
+            log_contact_event('deliverability_blocked', email=email, ip=source_ip, reason=deliverability_error)
+            return response(400, {'message': deliverability_message(deliverability_error)})
+
         if check_and_set_rate_limit(email, 'REQUEST'):
+            log_contact_event('otp_request_rate_limited', email=email, ip=source_ip, scope='email')
             return response(429, {
                 'message': 'Ya enviamos un código a este correo. Espera un minuto antes de solicitar otro.',
             })
 
+        if reserve_daily_otp_request(email):
+            log_contact_event('otp_daily_limit_exceeded', email=email, ip=source_ip)
+            return response(429, {
+                'message': 'Has alcanzado el límite diario de códigos para este correo. Intenta mañana.',
+            })
+
         if check_global_email_cap():
+            log_contact_event('email_cap_exhausted', ip=source_ip)
             return response(503, {'message': 'El envío de correos está temporalmente limitado. Intenta más tarde.'})
 
         token = f'{secrets.randbelow(1000000):06d}'
@@ -450,6 +514,7 @@ def handle_contact_request(event):
         )
 
         send_verification_code_email(email, token)
+        log_contact_event('otp_request_sent', email=email, ip=source_ip)
 
         return response(202, {
             'success': True,
@@ -469,9 +534,11 @@ def handle_contact_request(event):
 
 def handle_contact_verify(event):
     source_ip = get_source_ip(event)
+    log_api_route('POST', '/contact/verify')
     neutral_invalid = response(400, {'message': 'El código de verificación es inválido o expiró'})
 
     if check_ip_rate_limit(source_ip, 'VERIFY'):
+        log_contact_event('verify_rate_limited', ip=source_ip)
         return response(429, {'message': 'Demasiados intentos. Intenta de nuevo más tarde.'})
 
     try:
@@ -516,6 +583,7 @@ def handle_contact_verify(event):
                     tokens_table().delete_item(Key={'pk': f'EMAIL#{email}', 'sk': 'PENDING'})
                     return response(429, {'message': 'Demasiados intentos fallidos. Solicita un nuevo código.'})
                 raise
+            log_contact_event('verify_failed', ip=source_ip)
             return neutral_invalid
 
         payload = item.get('payload') or {}
@@ -534,6 +602,7 @@ def handle_contact_verify(event):
 
         submission_id = persist_submission(payload, submission_ip)
         tokens_table().delete_item(Key={'pk': f'EMAIL#{email}', 'sk': 'PENDING'})
+        log_contact_event('verify_succeeded', email=email, ip=source_ip, contactType=contact_type)
 
         return response(200, {
             'success': True,

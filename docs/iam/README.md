@@ -33,8 +33,8 @@ Tag both roles with `project=mxintech-website` if your organization requires res
 | Service | Access |
 |---------|--------|
 | CloudWatch Logs | Write to `/aws/lambda/mxintech-website-contact-form-handler` |
-| DynamoDB | `PutItem`, `GetItem`, `Query` on `mxintech-website-contact-submissions` (+ indexes); `PutItem`, `GetItem`, `UpdateItem`, `DeleteItem` on `mxintech-website-contact-verification-tokens` |
-| SES | `SendEmail` / `SendRawEmail` on identity `mxintech.org` |
+| DynamoDB | `PutItem`, `GetItem`, `Query` on `mxintech-website-contact-submissions` (+ indexes); `PutItem`, `GetItem`, `UpdateItem`, `DeleteItem` on `mxintech-website-contact-verification-tokens` (OTP limits, opt-out, rate limits) |
+| SES | `SendEmail` / `SendRawEmail` on identity `mxintech.org` via configuration set `mxintech-website-transactional` |
 
 **SES identity (verified):**
 

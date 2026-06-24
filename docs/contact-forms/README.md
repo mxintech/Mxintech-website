@@ -97,10 +97,78 @@ Submissions require a **two-step flow** (same pattern as [invitadoestas](https:/
 | Request attempts per IP / hour | 5 |
 | Verify attempts per IP / hour | 15 |
 | Global outbound emails / day | 200 |
+| OTP codes per email / day | 5 |
+| Disposable / invalid MX domains | Blocked before send |
+| Hard bounces & complaints | Auto-suppressed (`OPTOUT#` in tokens table) |
+
+See [`docs/monitoring/README.md`](../monitoring/README.md) for the CloudWatch dashboard and alarms.
 
 Pending tokens and rate-limit counters live in `mxintech-website-contact-verification-tokens` (TTL on `expiresAt`).
 
 Submissions are sent to `POST https://api.mxintech.org/contact/request` then `POST https://api.mxintech.org/contact/verify` with header `X-Requested-With: MxintechWebsite`.
+
+## Reviewing and responding to submissions
+
+There is no admin dashboard yet. Today the team workflow is:
+
+### 1. Email inbox (fastest)
+
+Each verified submission sends a notification to **`contacto@mxintech.org`** (configured as `NotificationEmail` in the contact API stack).
+
+That email includes:
+
+- Contact profile (member, leader, speaker, business)
+- Name, email, phone, message (and talk title for speakers)
+- Submission ID and timestamp
+- A **Responder al solicitante** button (or reply directly — `Reply-To` is set to the submitter’s email)
+
+**To respond:** hit Reply in your mail client, or use the button. Your reply goes to the person who filled out the form.
+
+The submitter also receives an auto-confirmation from `noreply@mxintech.org` with a summary of what they sent.
+
+### 2. DynamoDB (audit / search)
+
+All verified submissions are stored in **`mxintech-website-contact-submissions`** (AWS Console → DynamoDB → us-east-1).
+
+Each item includes: `id`, `status` (`verified`), `contactType`, `name`, `email`, `mobile`, `message`, `talkTitle` (if any), `timestamp`, `sourceIp`.
+
+The table has a GSI **`StatusTimestampIndex`** (`status` + `timestamp`) for listing recent items by status.
+
+Useful CLI example (read-only):
+
+```bash
+aws dynamodb query \
+  --table-name mxintech-website-contact-submissions \
+  --index-name StatusTimestampIndex \
+  --key-condition-expression "#s = :verified" \
+  --expression-attribute-names '{"#s":"status"}' \
+  --expression-attribute-values '{":verified":{"S":"verified"}}' \
+  --scan-index-forward false \
+  --limit 20
+```
+
+### 3. Optional next steps (not built yet)
+
+- Mark submissions as `reviewed` / `replied` in DynamoDB
+- Simple internal admin page or Slack webhook on new submissions
+- SES event tracking (bounces/complaints)
+
+## Branded transactional email
+
+Outbound mail from `noreply@mxintech.org` uses HTML templates in [`infra/contact-api/src/email_templates.py`](../../infra/contact-api/src/email_templates.py):
+
+- Official palette (Azul `#1B3F8B`, Rosa `#EF5980`, Carbón `#314044`)
+- Logo: `https://mxintech.org/assets/ajolote.png`
+
+Emails sent:
+
+| When | Recipient | Purpose |
+|------|-----------|---------|
+| `/contact/request` | Submitter | 6-digit verification code |
+| `/contact/verify` | Submitter | Confirmation + summary |
+| `/contact/verify` | `contacto@mxintech.org` | Team alert with Reply-To |
+
+After changing templates or handler logic, deploy with **AWS deploy → contact-api**.
 
 ## Backend
 
