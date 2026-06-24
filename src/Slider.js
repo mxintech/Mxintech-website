@@ -88,6 +88,17 @@ const Slider = () => {
 
   return (
     <div className="slider-hero">
+      <div className="slider-welcome-message" key={`caption-${slide.id}`}>
+        {slide.icons && (
+          <div className="slider-caption-icons" aria-hidden>
+            {slide.icons.map(({ Icon, key, label }) => (
+              <Icon key={key} className={`slider-icon slider-icon-${key}`} aria-label={label} />
+            ))}
+          </div>
+        )}
+        <p className="caption" id="slider-current-caption">{slide.caption}</p>
+      </div>
+
       <div
         className="slider-frame"
         onTouchStart={handleTouchStart}
@@ -115,17 +126,6 @@ const Slider = () => {
         </div>
 
         <div className="slider-overlay" />
-
-        <div className="slider-welcome-message">
-          {slide.icons && (
-            <div className="slider-caption-icons" aria-hidden>
-              {slide.icons.map(({ Icon, key, label }) => (
-                <Icon key={key} className={`slider-icon slider-icon-${key}`} aria-label={label} />
-              ))}
-            </div>
-          )}
-          <p className="caption" id="slider-current-caption">{slide.caption}</p>
-        </div>
 
         <div className="slider-toolbar">
           <button type="button" onClick={prevSlide} className="slider-button" aria-label="Slide anterior">
