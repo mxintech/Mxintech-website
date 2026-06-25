@@ -510,19 +510,22 @@ Resources:
       Principal: sns.amazonaws.com
       SourceArn: !Ref SesFeedbackTopic
 
+  # SESv2 resource: the SES v1 ConfigurationSetEventDestination does not
+  # actually provision SNS destinations (handler errors out), so use v2 which
+  # supports SnsDestination. It attaches to the same config set by name.
   SesFeedbackEventDestination:
-    Type: AWS::SES::ConfigurationSetEventDestination
+    Type: AWS::SESV2::ConfigurationSetEventDestination
     Properties:
       ConfigurationSetName: !Ref SesConfigurationSet
+      EventDestinationName: !Sub '${ProjectName}-ses-feedback-sns'
       EventDestination:
-        Name: !Sub '${ProjectName}-ses-feedback-sns'
         Enabled: true
         MatchingEventTypes:
-          - bounce
-          - complaint
-          - reject
+          - BOUNCE
+          - COMPLAINT
+          - REJECT
         SnsDestination:
-          TopicARN: !Ref SesFeedbackTopic
+          TopicArn: !Ref SesFeedbackTopic
 
   ContactLambdaErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
