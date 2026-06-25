@@ -3,7 +3,7 @@ export const SOCIAL_LINKS = {
   linkedin: 'https://www.linkedin.com/company/mxintech/',
   youtube: 'https://www.youtube.com/mexicointech',
   x: 'https://x.com/mxintech',
-  tiktok: 'https://www.tiktok.com/mxintech',
+  tiktok: 'https://www.tiktok.com/@mxintech',
   twitch: 'https://www.twitch.tv/mxintech',
   meetup: 'https://www.meetup.com/aws-user-group-tlaxcala/',
 };

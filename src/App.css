@@ -138,17 +138,17 @@ body[data-theme="dark"] .eventos-video-wrap {
 
 /* Acercade: 1 column, 2 rows — pet + box slider; max-height 1080px - header */
 section.acercade-section {
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: auto 1fr;
-  gap: clamp(0.75rem, 2vw, 1.5rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  gap: clamp(1rem, 3vh, 2.5rem);
   border-radius: 0;
   box-shadow: none;
   max-height: none;
   height: auto;
   min-height: calc(100vh - var(--header-height) - var(--announcement-height));
   overflow: hidden;
-  align-items: stretch;
 }
 
 .acercade-pet-row {
@@ -167,7 +167,7 @@ section.acercade-section {
 }
 
 .acercade-mascota {
-  max-height: clamp(140px, 22vh, 280px);
+  max-height: clamp(160px, 26vh, 300px);
   width: auto;
   height: auto;
   object-fit: contain;
@@ -179,12 +179,16 @@ section.acercade-section {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  flex: 1;
+  flex: 0 1 auto;
 }
 
 .acercade-slider-wrapper {
-  flex: 1;
+  flex: 0 0 auto;
   min-height: 0;
+  /* Definite, viewport-relative height drives the card size (the viewport fills
+     this at 100%); set here because the viewport element also carries
+     .acercade-slider-cols which sets height:100%. */
+  height: clamp(260px, 44vh, 440px);
   padding: 0 0.25rem;
   width: 100%;
 }
@@ -219,12 +223,12 @@ section.acercade-section {
 .acercade-slider-viewport {
   touch-action: pan-y;
   width: 100%;
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
   min-width: 0;
   overflow: hidden;
   display: flex;
-  max-height: 180px;
+  height: 100%;
 }
 
 /* 3 columns: 10% | 80% | 10%; center = full box, sides = peek of prev/next (wrap: 1st↔3rd) */
@@ -318,28 +322,40 @@ section.acercade-section {
 .acercade-slide-box {
   height: auto;
   min-height: 120px;
-  padding: clamp(0.75rem, 2vw, 1.25rem);
+  padding: clamp(1rem, 2.5vw, 2rem);
   background: var(--card-bg, #fff);
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   border: 1px solid rgba(var(--mx-blue-rgb), 0.12);
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  /* Editorial split: title on the left, body text on the right. */
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  text-align: left;
   color: var(--heading);
 }
 
 .acercade-slide-box h4 {
   margin: 0;
-  font-size: clamp(1rem, 2vw, 1.35rem);
+  flex: 0 0 36%;
+  padding-right: clamp(1.25rem, 3.5vw, 3rem);
+  font-size: clamp(1.1rem, 2.4vw, 1.7rem);
   font-weight: 700;
+  line-height: 1.25;
   color: var(--mx-pink);
 }
 
 .acercade-slide-box p {
   margin: 0;
-  font-size: clamp(0.8rem, 1.5vw, 1rem);
-  line-height: 1.5;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 60ch;
+  padding-left: clamp(1.25rem, 3.5vw, 3rem);
+  border-left: 1px solid var(--border-subtle);
+  font-size: clamp(0.95rem, 1.6vw, 1.2rem);
+  line-height: 1.6;
   color: var(--p-text);
   overflow-y: auto;
   white-space: pre-line;
@@ -416,6 +432,26 @@ section.acercade-section {
     height: 2rem;
     font-size: 0.75rem;
   }
+
+  /* Mobile/tablet: stack title over text in a single column (the side-by-side
+     split needs desktop width). Matches the site's 900px stacking breakpoint. */
+  .acercade-slide-box {
+    flex-direction: column;
+    text-align: center;
+    gap: clamp(0.4rem, 1.5vw, 0.75rem);
+  }
+
+  .acercade-slide-box h4 {
+    flex: 0 0 auto;
+    padding-right: 0;
+  }
+
+  .acercade-slide-box p {
+    flex: 0 1 auto;
+    max-width: 100%;
+    padding-left: 0;
+    border-left: none;
+  }
 }
 
 @media (max-width: 600px) {
@@ -452,19 +488,29 @@ section.acercade-section {
   align-items: center;
 }
 
+/* Center the hero within the full-height section so it fills the space evenly
+   instead of clustering at the top with an empty band below. */
+#inicio {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 .hero-layout {
   width: 100%;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-  gap: clamp(1.25rem, 3vw, 2.5rem);
+  /* Give the slider more width so it grows taller (it is aspect-ratio bound)
+     and fills the section; the short copy column still has ample room. */
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.85fr);
+  gap: clamp(1.5rem, 3.5vw, 3rem);
   align-items: center;
 }
 
 .hero-slider {
   width: 100%;
   height: auto;
-  max-height: min(580px, calc(100vh - var(--header-height) - var(--announcement-height) - 8rem));
+  max-height: min(640px, calc(100vh - var(--header-height) - var(--announcement-height) - 5rem));
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 16px 40px rgba(var(--mx-blue-rgb), 0.2);
@@ -476,8 +522,8 @@ section.acercade-section {
 }
 
 .hero-slider .slider-frame {
-  max-height: min(520px, calc(100vh - var(--header-height) - var(--announcement-height) - 14rem));
-  min-height: clamp(200px, 38vw, 280px);
+  max-height: min(600px, calc(100vh - var(--header-height) - var(--announcement-height) - 9rem));
+  min-height: clamp(240px, 42vw, 360px);
 }
 
 .hero-copy {
