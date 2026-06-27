@@ -58,7 +58,11 @@ def _valid_ses_feedback_addresses(entries):
 
 
 def process_ses_feedback_notification(payload):
-    notification_type = (payload.get('notificationType') or '').lower()
+    # SES event publishing uses 'eventType'; identity notifications use
+    # 'notificationType'. Accept either so EventBridge events are handled.
+    notification_type = (
+        payload.get('eventType') or payload.get('notificationType') or ''
+    ).lower()
     recipients = []
 
     if notification_type == 'bounce':

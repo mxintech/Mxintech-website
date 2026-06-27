@@ -437,51 +437,6 @@ Resources:
     Properties:
       Name: !Sub '${ProjectName}-transactional'
 
-  SesFeedbackTopic:
-    Type: AWS::SNS::Topic
-    Properties:
-      TopicName: !Sub '${ProjectName}-ses-feedback'
-      Tags:
-        - Key: project
-          Value: !Ref ProjectName
-
-  SesFeedbackTopicPolicy:
-    Type: AWS::SNS::TopicPolicy
-    Properties:
-      Topics:
-        - !Ref SesFeedbackTopic
-      PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Sid: AllowAccountOwner
-            Effect: Allow
-            Principal:
-              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
-            Action:
-              - SNS:GetTopicAttributes
-              - SNS:SetTopicAttributes
-              - SNS:Subscribe
-              - SNS:ListSubscriptionsByTopic
-              - SNS:Publish
-            Resource: !Ref SesFeedbackTopic
-          - Sid: AllowSesPublish
-            Effect: Allow
-            Principal:
-              Service: ses.amazonaws.com
-            Action: SNS:Publish
-            Resource: !Ref SesFeedbackTopic
-            Condition:
-              StringEquals:
-                AWS:SourceAccount: !Ref AWS::AccountId
-
-  SesFeedbackEmailSubscription:
-    Type: AWS::SNS::Subscription
-    Condition: HasAlertEmail
-    Properties:
-      TopicArn: !Ref SesFeedbackTopic
-      Protocol: email
-      Endpoint: !Ref AlertNotificationEmail
-
   SesFeedbackFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -495,34 +450,43 @@ Resources:
         Variables:
           TOKENS_TABLE_NAME: !Ref ContactVerificationTokensTable
 
-  SesFeedbackTopicLambdaSubscription:
-    Type: AWS::SNS::Subscription
+  # SES publishes bounce/complaint/reject events to the default EventBridge bus
+  # (the SES v1 SNS-destination handler is broken), and a rule routes them to
+  # the feedback Lambda, which filters by eventType.
+  SesFeedbackEventDestination:
+    Type: AWS::SES::ConfigurationSetEventDestination
     Properties:
-      TopicArn: !Ref SesFeedbackTopic
-      Protocol: lambda
-      Endpoint: !GetAtt SesFeedbackFunction.Arn
+      ConfigurationSetName: !Ref SesConfigurationSet
+      EventDestination:
+        Name: !Sub '${ProjectName}-ses-feedback-eventbridge'
+        Enabled: true
+        MatchingEventTypes:
+          - bounce
+          - complaint
+          - reject
+        EventBridgeDestination:
+          EventBusArn: !Sub 'arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/default'
+
+  SesFeedbackEventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub '${ProjectName}-ses-feedback'
+      Description: Route SES bounce/complaint/reject events to the feedback Lambda.
+      EventPattern:
+        source:
+          - aws.ses
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt SesFeedbackFunction.Arn
+          Id: SesFeedbackFunction
 
   SesFeedbackFunctionInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !Ref SesFeedbackFunction
-      Principal: sns.amazonaws.com
-      SourceArn: !Ref SesFeedbackTopic
-
-  SesFeedbackEventDestination:
-    Type: AWS::SES::ConfigurationSetEventDestination
-    Properties:
-      ConfigurationSetName: !Ref SesConfigurationSet
-      EventDestination:
-        Name: !Sub '${ProjectName}-ses-feedback-sns'
-        Enabled: true
-        MatchingEventTypes:
-          - bounce
-          - complaint
-          - reject
-        SnsDestination:
-          TopicARN: !Ref SesFeedbackTopic
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt SesFeedbackEventRule.Arn
 
   ContactLambdaErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
