@@ -31,6 +31,14 @@ const ContactPageLayout = ({ contactType }) => {
           <p className="contact-hero-tagline">{config.tagline}</p>
           <h2>{config.headline}</h2>
           <p className="contact-hero-intro">{config.intro}</p>
+          {config.image && (
+            <img
+              src={config.image.src}
+              alt={config.image.alt}
+              className="contact-hero-photo"
+              loading="lazy"
+            />
+          )}
           <ul className="contact-benefits">
             {config.benefits.map(({ icon: BenefitIcon, title, text }) => (
               <li key={title} className="contact-benefit">

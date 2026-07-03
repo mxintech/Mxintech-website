@@ -32,6 +32,10 @@ export const CONTACT_FORMS = {
     accent: BRAND.primary.blue,
     headline: 'Únete como miembro',
     tagline: 'Aprende, crece y mantente al día con la comunidad tech',
+    image: {
+      src: '/img/member.jpg',
+      alt: 'Desarrolladores colaborando en equipo con sus laptops',
+    },
     intro:
       'Ideal si quieres seguir aprendiendo, impulsar tu carrera profesional y enterarte primero de lo que pasa en México in Tech.',
     benefits: [
@@ -89,6 +93,10 @@ export const CONTACT_FORMS = {
     accent: BRAND.primary.pink,
     headline: 'Conviértete en líder',
     tagline: 'Da el siguiente paso: de espectador a impulsor de la comunidad',
+    image: {
+      src: '/img/leader.jpg',
+      alt: 'Una líder de comunidad presentando frente a su audiencia',
+    },
     intro:
       'Para quienes quieren dejar de ser solo audiencia y contribuir activamente al crecimiento de México in Tech.',
     benefits: [
@@ -147,6 +155,10 @@ export const CONTACT_FORMS = {
     accent: BRAND.secondary.cyan,
     headline: 'Comparte como speaker',
     tagline: 'Tu experiencia técnica puede inspirar a toda la comunidad',
+    image: {
+      src: '/img/speaker.jpg',
+      alt: 'Un speaker compartiendo una charla técnica con la comunidad',
+    },
     intro:
       'Si dominas un tema y quieres compartirlo en charlas, talleres o webinars, este es tu espacio.',
     benefits: [

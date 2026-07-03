@@ -47,6 +47,12 @@ describe('contact form config integrity', () => {
     expect(CONTACT_FORMS.speaker.wizard.talkTitle.title).toBeTruthy();
   });
 
+  it.each(['member', 'leader', 'speaker'])('%s has a motivational hero image', (type) => {
+    const { image } = CONTACT_FORMS[type];
+    expect(image.src).toBe(`/img/${type}.jpg`);
+    expect(image.alt).toBeTruthy();
+  });
+
   it('returns null for unknown contact types', () => {
     expect(getContactFormConfig('nope')).toBeNull();
     expect(getContactFormConfig('member')).toBe(CONTACT_FORMS.member);
