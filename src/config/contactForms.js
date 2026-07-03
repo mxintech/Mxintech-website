@@ -210,6 +210,10 @@ export const CONTACT_FORMS = {
     icon: FaHandshake,
     accent: BRAND.secondary.green,
     headline: 'Empresas y colaboraciones',
+    image: {
+      src: '/img/apoyo-empresas.jpg',
+      alt: 'Manos entrelazadas de un equipo sellando una alianza',
+    },
     tagline: 'Apoya la comunidad tech y conecta con talento en México',
     intro:
       'Si representas una empresa o institución, puedes patrocinar, colaborar o explorar alianzas con México in Tech.',

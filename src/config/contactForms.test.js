@@ -47,9 +47,14 @@ describe('contact form config integrity', () => {
     expect(CONTACT_FORMS.speaker.wizard.talkTitle.title).toBeTruthy();
   });
 
-  it.each(['member', 'leader', 'speaker'])('%s has a motivational hero image', (type) => {
+  it.each([
+    ['member', '/img/member.jpg'],
+    ['leader', '/img/leader.jpg'],
+    ['speaker', '/img/speaker.jpg'],
+    ['business', '/img/apoyo-empresas.jpg'],
+  ])('%s has a motivational hero image', (type, src) => {
     const { image } = CONTACT_FORMS[type];
-    expect(image.src).toBe(`/img/${type}.jpg`);
+    expect(image.src).toBe(src);
     expect(image.alt).toBeTruthy();
   });
 
