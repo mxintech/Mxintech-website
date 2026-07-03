@@ -5,8 +5,17 @@ import {
   FaChevronRight,
   FaCircle,
   FaRegCircle,
+  FaUsers,
+  FaVideo,
+  FaHandshake,
 } from 'react-icons/fa';
 import mascota from '../assets/mascota.png';
+import { WEBINARS } from '../config/content';
+import {
+  COMMUNITY_METRICS,
+  totalSocialFollowers,
+  FEATURED_COLLABORATIONS,
+} from '../config/community';
 
 export const ACERCADE_SLIDES = [
   {
@@ -183,6 +192,34 @@ const AcercadeSection = () => {
             </button>
           </div>
           <p className="acercade-swipe-hint">Desliza o usa las flechas para ver más</p>
+        </div>
+      </div>
+      <div className="acercade-metrics" aria-label="Nuestra comunidad en números">
+        <div className="acercade-metric">
+          <FaUsers className="acercade-metric-icon" aria-hidden />
+          <p className="acercade-metric-value">{totalSocialFollowers().toLocaleString()}+</p>
+          <p className="acercade-metric-label">seguidores en redes</p>
+          <p className="acercade-metric-detail">
+            {COMMUNITY_METRICS.socials.map((s) => s.network).join(' · ')}
+          </p>
+        </div>
+        <div className="acercade-metric">
+          <FaVideo className="acercade-metric-icon" aria-hidden />
+          <p className="acercade-metric-value">{WEBINARS.length}</p>
+          <p className="acercade-metric-label">webinars grabados</p>
+          <p className="acercade-metric-detail">disponibles en YouTube</p>
+        </div>
+        <div className="acercade-metric">
+          <FaHandshake className="acercade-metric-icon" aria-hidden />
+          <p className="acercade-metric-value">{FEATURED_COLLABORATIONS.length}</p>
+          <p className="acercade-metric-label">eventos en colaboración</p>
+          <ul className="acercade-metric-collabs">
+            {FEATURED_COLLABORATIONS.map(({ name, detail }) => (
+              <li key={name}>
+                <strong>{name}</strong> · {detail}
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
       <div className="section-cta">

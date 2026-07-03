@@ -23,6 +23,16 @@ describe('App', () => {
     expect(screen.getByText(/todos los derechos reservados/i)).toBeInTheDocument();
   });
 
+  it('renders community metrics in the acercade section', () => {
+    renderAt('/');
+    expect(screen.getByText(/seguidores en redes/i)).toBeInTheDocument();
+    /* Appears in the hero proof badge and in the metric card */
+    expect(screen.getAllByText(/webinars grabados/i).length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText(/eventos en colaboración/i)).toBeInTheDocument();
+    expect(screen.getByText('KCD México 2026')).toBeInTheDocument();
+    expect(screen.getByText('AWS Community Day 2025')).toBeInTheDocument();
+  });
+
   it('renders the universidades section with benefits and CTAs', () => {
     renderAt('/');
     expect(screen.getByRole('heading', { name: 'Universidades' })).toBeInTheDocument();
