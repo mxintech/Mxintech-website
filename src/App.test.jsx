@@ -23,6 +23,23 @@ describe('App', () => {
     expect(screen.getByText(/todos los derechos reservados/i)).toBeInTheDocument();
   });
 
+  it('renders the universidades section with benefits and CTAs', () => {
+    renderAt('/');
+    expect(screen.getByRole('heading', { name: 'Universidades' })).toBeInTheDocument();
+    expect(screen.getByText(/en tlaxcala ese ecosistema apenas está naciendo/i)).toBeInTheDocument();
+    expect(screen.getByText('Forma líderes')).toBeInTheDocument();
+    expect(screen.getByText('Skills que pide la industria')).toBeInTheDocument();
+    expect(screen.getByText('Confianza al egresar')).toBeInTheDocument();
+    expect(screen.getByText('Apoyo para docentes')).toBeInTheDocument();
+    expect(
+      screen.getByRole('img', { name: /estudiantes universitarios/i })
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /propón una colaboración/i })).toHaveAttribute(
+      'href',
+      '/contact/business'
+    );
+  });
+
   it('renders the contact wizard on persona routes', () => {
     renderAt('/contact/speaker');
     expect(screen.getByText(/comparte como speaker/i)).toBeInTheDocument();

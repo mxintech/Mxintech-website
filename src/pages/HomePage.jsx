@@ -3,6 +3,7 @@ import HeroSection from '../sections/HeroSection';
 import AcercadeSection from '../sections/AcercadeSection';
 import WebinarsSection from '../sections/WebinarsSection';
 import EventosSection from '../sections/EventosSection';
+import UniversidadesSection from '../sections/UniversidadesSection';
 
 const HomePage = () => (
   <>
@@ -17,6 +18,9 @@ const HomePage = () => (
     </Reveal>
     <Reveal>
       <EventosSection />
+    </Reveal>
+    <Reveal>
+      <UniversidadesSection />
     </Reveal>
   </>
 );

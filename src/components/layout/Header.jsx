@@ -5,6 +5,7 @@ import {
   FaInfoCircle,
   FaVideo,
   FaCalendarAlt,
+  FaGraduationCap,
   FaBook,
   FaEnvelope,
 } from 'react-icons/fa';
@@ -16,6 +17,7 @@ const NAV_SECTIONS = [
   { href: '/#acercade', label: 'Acerca de', Icon: FaInfoCircle },
   { href: '/#video', label: 'Webinars', Icon: FaVideo },
   { href: '/#eventos', label: 'Eventos', Icon: FaCalendarAlt },
+  { href: '/#universidades', label: 'Universidades', Icon: FaGraduationCap },
 ];
 
 const Header = () => {

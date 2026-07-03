@@ -100,7 +100,8 @@ body[data-theme="dark"] .eventos-video-wrap {
 #inicio,
 #acercade,
 #video,
-#eventos {
+#eventos,
+#universidades {
   scroll-margin-top: calc(var(--header-height) + var(--announcement-height));
 }
 
@@ -2017,7 +2018,9 @@ main {
   display: none;
 }
 
-@media (max-width: 900px) {
+/* Short brand text below 1200px: the long variant plus 7 inline nav links
+   don't fit between 900–1200px. */
+@media (max-width: 1200px) {
   .nav-logo-text-long {
     display: none;
   }
@@ -2256,8 +2259,9 @@ main {
     animation: none !important;
   }
 }
-/* En pantallas grandes: menú horizontal con iconos */
-@media (min-width: 768px) {
+/* En pantallas grandes: menú horizontal con iconos (900px+ so the 7 links
+   never overlap the logo; below that the hamburger menu takes over) */
+@media (min-width: 900px) {
   .hamburger {
     display: none;
   }
@@ -2277,16 +2281,59 @@ main {
     font-size: clamp(0.875rem, 1.2vw, 1rem);
   }
 
-  /* Hide icons on desktop (768px and up) */
   .nav-link-icon {
     display: none;
   }
 }
 
-/* iPad / tablet: padding-right on nav links */
-@media (min-width: 768px) and (max-width: 900px) {
+/* Tablet range: same dropdown menu as phones (inline links don't fit) */
+@media (min-width: 769px) and (max-width: 899px) {
+  .nav-actions {
+    position: relative;
+  }
+
   .nav-links {
-    padding-right: 1.25rem;
+    display: none;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 0.75rem;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.5rem;
+    border-radius: 8px;
+    background-color: #3159ad;
+    background-image: linear-gradient(135deg, #3159ad 0%, #4a6fc4 50%, #5f85d4 100%);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+    z-index: 1000;
+    width: max-content;
+    min-width: min-content;
+    height: auto;
+    align-items: stretch;
+  }
+
+  .nav-links.open {
+    display: flex;
+  }
+
+  .nav-links li {
+    list-style: none;
+  }
+
+  .nav-links a,
+  .nav-links .nav-link-item {
+    display: flex;
+    width: 100%;
+    white-space: nowrap;
+    padding: 0.5rem 0.65rem;
+    transition: background 0.2s ease;
+    background: transparent;
+    height: auto;
+    color: #fff;
+  }
+
+  .nav-links a:hover {
+    background: rgba(255, 255, 255, 0.2);
   }
 }
 
@@ -2417,5 +2464,142 @@ main {
   .contact-hero-photo {
     max-width: 100%;
     aspect-ratio: 16 / 9;
+  }
+}
+
+/* ============================================================
+   Universidades section: photo + intro, benefit card grid, CTA
+   ============================================================ */
+
+.universidades-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(1rem, 2.5vh, 1.75rem);
+}
+
+.universidades-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(1.25rem, 3vw, 2.5rem);
+  align-items: center;
+}
+
+.universidades-photo {
+  width: 100%;
+  aspect-ratio: 16 / 11;
+  object-fit: cover;
+  border-radius: 16px;
+  border: 1px solid rgba(var(--mx-blue-rgb), 0.12);
+  box-shadow: 0 12px 28px rgba(var(--mx-blue-rgb), 0.18);
+}
+
+.universidades-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  text-align: left;
+}
+
+.universidades-copy p {
+  margin: 0;
+  font-size: clamp(0.95rem, 1.5vw, 1.08rem);
+  line-height: 1.65;
+  color: var(--p-text);
+}
+
+.universidades-benefits {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.7rem;
+}
+
+.uni-benefit {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
+  text-align: left;
+  padding: 0.9rem 1rem;
+  border-radius: 14px;
+  background: var(--card-bg, #fff);
+  border: 1px solid rgba(var(--mx-blue-rgb), 0.1);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.uni-benefit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(var(--mx-blue-rgb), 0.18);
+}
+
+.uni-benefit-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--mx-blue) 12%, #ffffff);
+  color: var(--mx-blue);
+  flex-shrink: 0;
+}
+
+.uni-benefit-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  line-height: 1.45;
+}
+
+.uni-benefit-body strong {
+  color: var(--heading);
+  font-size: 0.95rem;
+}
+
+.uni-benefit-body span {
+  font-size: 0.86rem;
+  color: var(--p-text);
+}
+
+.universidades-cta-actions {
+  justify-content: center;
+  margin-top: 0;
+}
+
+[data-theme="dark"] .uni-benefit {
+  background-color: rgba(var(--mx-blue-night-deep-rgb), 0.42);
+  background-image: linear-gradient(
+    150deg,
+    rgba(var(--mx-blue-rgb), 0.2) 0%,
+    rgba(var(--mx-blue-night-deep-rgb), 0.48) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .uni-benefit-icon {
+  background: rgba(var(--mx-blue-rgb), 0.3);
+  border: 1px solid var(--border-subtle);
+  color: var(--mx-cyan);
+}
+
+[data-theme="dark"] .universidades-photo {
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+}
+
+@media (max-width: 900px) {
+  .universidades-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .universidades-section {
+    min-height: 0;
   }
 }
