@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-const SITE_KEY = process.env.REACT_APP_TURNSTILE_SITE_KEY || '';
+const SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || '';
 
 export function turnstileEnabled() {
   return Boolean(SITE_KEY);

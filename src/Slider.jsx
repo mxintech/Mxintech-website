@@ -4,8 +4,7 @@ import slide1 from "./assets/KCD2026.png";
 import slide2 from "./assets/slide2.jpg";
 import slide3 from "./assets/slide3.jpg";
 import slide4 from "./assets/slide4.jpg";
-import { FaStar, FaCalendarAlt, FaMapPin } from "react-icons/fa";
-import { SiAmazonwebservices } from "react-icons/si";
+import { FaStar, FaCalendarAlt, FaMapPin, FaAws } from "react-icons/fa";
 
 const INTERVAL_MS = 20000;
 const TICK_MS = 100;
@@ -26,7 +25,7 @@ const SLIDES = [
     caption: "Oficialmente Somos un AWS User Group.",
     icons: [
       { Icon: FaStar, key: "tada", label: "Celebration" },
-      { Icon: SiAmazonwebservices, key: "aws", label: "AWS" },
+      { Icon: FaAws, key: "aws", label: "AWS" },
     ],
   },
   { id: 3, url: slide3, caption: "1er meetup presencial de la comunidad." },

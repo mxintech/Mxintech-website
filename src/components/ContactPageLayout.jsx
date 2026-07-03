@@ -47,7 +47,11 @@ const ContactPageLayout = ({ contactType }) => {
         </div>
 
         <div className="contact-form-panel contact-animate contact-animate-2">
-          <ContactForm contactType={contactType} formConfig={config.form} animated={visible} />
+          <ContactForm
+            contactType={contactType}
+            formConfig={config.form}
+            wizardConfig={config.wizard}
+          />
         </div>
       </div>
     </section>

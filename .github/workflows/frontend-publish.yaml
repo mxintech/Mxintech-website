@@ -33,9 +33,33 @@ jobs:
         run: |
           echo "Authorized actor: ${{ github.actor }}"
 
+  test:
+    name: Run tests
+    needs: authorize
+    runs-on: ubuntu-latest
+    env:
+      SELECTED_REF: ${{ github.event.inputs.ref || 'main' }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          ref: ${{ env.SELECTED_REF }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm test
+
   publish:
     name: Build and publish frontend
-    needs: authorize
+    needs: [authorize, test]
     runs-on: ubuntu-latest
     env:
       SELECTED_REF: ${{ github.event.inputs.ref || 'main' }}
@@ -127,8 +151,8 @@ jobs:
 
       - name: Build frontend
         env:
-          REACT_APP_API_ENDPOINT: ${{ steps.resolve.outputs.api_public_url }}
-          REACT_APP_TURNSTILE_SITE_KEY: ${{ steps.resolve.outputs.turnstile_site_key }}
+          VITE_API_ENDPOINT: ${{ steps.resolve.outputs.api_public_url }}
+          VITE_TURNSTILE_SITE_KEY: ${{ steps.resolve.outputs.turnstile_site_key }}
         run: npm run build
 
       - name: Confirm frontend bucket exists
@@ -141,15 +165,12 @@ jobs:
             --exact-timestamps \
             --cache-control "public, max-age=31536000, immutable" \
             --exclude "index.html" \
-            --exclude "asset-manifest.json" \
             --exclude "sitemap.xml" \
             --exclude "robots.txt"
 
       - name: Upload entry files with short cache
         run: |
           aws s3 cp build/index.html "s3://${{ steps.resolve.outputs.frontend_bucket }}/index.html" \
-            --cache-control "public, max-age=0, must-revalidate"
-          aws s3 cp build/asset-manifest.json "s3://${{ steps.resolve.outputs.frontend_bucket }}/asset-manifest.json" \
             --cache-control "public, max-age=0, must-revalidate"
           aws s3 cp build/sitemap.xml "s3://${{ steps.resolve.outputs.frontend_bucket }}/sitemap.xml" \
             --cache-control "public, max-age=3600"

@@ -1,5 +1,9 @@
 /* México in Tech — brand + theme tokens (see docs/brand/README.md) */
 :root {
+  /* Typography: display font for headings, fast system stack for body */
+  --font-display: 'Sora', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
   /* Primary */
   --mx-blue: #1B3F8B;
   --mx-pink: #EF5980;
@@ -35,6 +39,8 @@
 
   /* Semantic — light theme */
   --bg: #ffffff;
+  /* Subtly tinted page background so white cards keep depth in light mode */
+  --page-bg: #f2f5fb;
   --bg-gradient: none;
   --text: var(--mx-charcoal);
   --heading: var(--mx-blue);
@@ -57,6 +63,7 @@
 
 [data-theme="dark"] {
   --bg: var(--mx-blue-night);
+  --page-bg: var(--mx-blue-night);
   --bg-gradient: radial-gradient(
     ellipse 120% 80% at 50% -20%,
     rgba(var(--mx-blue-rgb), 0.55) 0%,
@@ -107,50 +114,77 @@ body[data-theme="dark"] {
 
 body {
   margin: 0;
-  font-family: 'Roboto', sans-serif;
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--bg);
+  background-color: var(--page-bg);
   background-image: var(--bg-gradient);
   background-size: auto;
   animation: none;
   color: var(--text);
 }
 
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+}
+
 code {
-  font-family: 'Roboto', monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 .App {
   text-align: center;
 }
 
-.section {
-  scroll-snap-align: start;
-}
-
+/* Natural scrolling (no snap) with smooth anchor navigation */
 html, body {
   width: 100%;
   min-height: 100%;
   height: auto;
   scroll-behavior: smooth;
-  scroll-snap-type: y mandatory;
   scroll-padding-top: calc(var(--header-height) + var(--announcement-height, 0px));
 }
 
 @media (max-width: 900px) {
-  html,
-  body {
-    scroll-snap-type: none;
-    scroll-padding-top: calc(var(--header-height) + var(--announcement-height, 0px));
-  }
-
-  .section {
-    scroll-snap-align: none;
-  }
-
   main section {
     margin-bottom: 1.5rem;
+  }
+}
+
+/* Scroll-reveal: content fades/slides in the first time it enters the viewport */
+.reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition:
+    opacity 0.6s ease,
+    transform 0.65s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+.reveal--visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Accessibility: honor reduced-motion everywhere */
+@media (prefers-reduced-motion: reduce) {
+  html, body {
+    scroll-behavior: auto;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 

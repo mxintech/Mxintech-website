@@ -65,6 +65,23 @@ export const CONTACT_FORMS = {
       messagePlaceholder:
         'Ej.: Me interesa cloud y quiero asistir a webinars y conocer a más desarrolladores…',
     },
+    wizard: {
+      choice: {
+        title: '¿Qué te gustaría aprender?',
+        subtitle: 'Elige uno o varios temas — así te avisamos de lo que sí te interesa.',
+        messageLabel: 'Intereses',
+        options: [
+          'Cloud & AWS',
+          'DevOps & Kubernetes',
+          'Desarrollo de software',
+          'IA y datos',
+          'Carrera profesional',
+        ],
+        required: false,
+      },
+      messageLead: '¡Buena elección! Cuéntanos qué te motiva a unirte.',
+      contactLead: 'Último paso: ¿a dónde te avisamos de eventos y cursos?',
+    },
   },
   leader: {
     contactType: 'leader',
@@ -104,6 +121,24 @@ export const CONTACT_FORMS = {
       messageLabel: '¿Cómo te gustaría contribuir? (requerido)',
       messagePlaceholder:
         'Ej.: Me gustaría ayudar a organizar meetups, moderar webinars o apoyar con difusión en LinkedIn…',
+    },
+    wizard: {
+      choice: {
+        title: '¿En qué área te gustaría hacer que las cosas pasen?',
+        subtitle: 'Elige una o varias — no necesitas experiencia previa, solo ganas.',
+        messageLabel: 'Áreas de contribución',
+        options: [
+          'Organizar eventos',
+          'Crear contenido',
+          'Difusión en redes',
+          'Mentoring y charlas',
+          'Operación y logística',
+        ],
+        required: true,
+        requiredError: 'Elige al menos un área para continuar',
+      },
+      messageLead: '¡Eso es actitud! Cuéntanos un poco de ti y de tu experiencia.',
+      contactLead: 'Último paso: ¿cómo te contactamos para darte la bienvenida al equipo?',
     },
   },
   speaker: {
@@ -148,6 +183,15 @@ export const CONTACT_FORMS = {
       talkTitleLabel: 'Título de la charla (requerido)',
       talkTitlePlaceholder: 'Ej.: Introducción a EKS para equipos que empiezan en Kubernetes',
     },
+    wizard: {
+      talkTitle: {
+        title: '¿De qué te gustaría hablar?',
+        subtitle: 'No tiene que ser perfecto — afinamos el título contigo.',
+      },
+      messageLead: '¡Suena genial! Cuéntanos tu experiencia y el enfoque que le darías.',
+      contactLead: 'Ya casi: ¿cómo te contactamos para agendar tu charla?',
+      reachNote: 'Tu charla puede llegar a toda la comunidad: se transmite en vivo y queda grabada en YouTube.',
+    },
   },
   business: {
     contactType: 'business',
@@ -187,6 +231,25 @@ export const CONTACT_FORMS = {
       messageLabel: 'Detalle de tu propuesta (requerido)',
       messagePlaceholder:
         'Ej.: Somos [empresa]. Podemos ofrecer sede para meetups y patrocinar coffee breaks en eventos…',
+    },
+    wizard: {
+      choice: {
+        title: '¿Cómo le gustaría colaborar a tu organización?',
+        subtitle: 'Elige una o varias formas de colaboración.',
+        messageLabel: 'Tipo de colaboración',
+        options: [
+          'Patrocinio de eventos',
+          'Sede para meetups',
+          'Swag y becas',
+          'Cursos y contenido',
+          'Alianza institucional',
+        ],
+        required: true,
+        requiredError: 'Elige al menos una forma de colaboración',
+      },
+      messageLead: 'Excelente. Cuéntanos los detalles de tu propuesta.',
+      contactLead: 'Último paso: ¿con quién coordinamos la colaboración?',
+      reachNote: 'Invertir en comunidad conecta tu marca con talento tech activo en México.',
     },
   },
 };
