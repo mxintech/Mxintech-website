@@ -67,6 +67,16 @@ describe('App', () => {
     expect(screen.getByText(/blogs, tutoriales, videos, charlas/i)).toBeInTheDocument();
     expect(screen.getByText(/respeto e inclusión/i)).toBeInTheDocument();
     expect(screen.getByText(/vigencia del rol/i)).toBeInTheDocument();
+    /* Benefits card */
+    expect(screen.getByText(/beneficios del rol/i)).toBeInTheDocument();
+    expect(screen.getByText(/reconocimiento por tu experiencia/i)).toBeInTheDocument();
+    expect(screen.getByText(/certificaciones AWS/i)).toBeInTheDocument();
+    expect(screen.getByText(/swag exclusivo/i)).toBeInTheDocument();
+    /* Evaluation criteria card */
+    expect(screen.getByText(/criterios de evaluación/i)).toBeInTheDocument();
+    expect(screen.getByText(/3 contribuciones al mes/i)).toBeInTheDocument();
+    expect(screen.getByText(/speaker en público/i)).toBeInTheDocument();
+    expect(screen.getByText(/blogs, videos u otros recursos/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /aplica para ser líder/i })).toHaveAttribute(
       'href',
       '/contact/leader'

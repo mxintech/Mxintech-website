@@ -6,6 +6,8 @@ import {
   FaBalanceScale,
   FaUserTie,
   FaHeart,
+  FaGift,
+  FaClipboardCheck,
 } from 'react-icons/fa';
 import Reveal from '../components/Reveal';
 
@@ -15,6 +17,21 @@ const RESPONSIBILITIES = [
   'Mejorar la experiencia de quienes ya son miembros.',
   'Atraer a nuevos miembros y darles una bienvenida que los haga quedarse.',
   'Promover tecnologías con blogs, tutoriales, videos, charlas y más dentro de la comunidad.',
+];
+
+const BENEFITS = [
+  'Reconocimiento por tu experiencia y tus contribuciones a la comunidad.',
+  'Conoce a otros líderes y profesionales con la misma energía y valores de crecimiento.',
+  'Apoyo y formación de México in Tech para eventos, charlas, creación de contenido o mentoría.',
+  'Códigos de descuento para certificaciones AWS y boletos con descuento para eventos tech.',
+  'Swag exclusivo y giveaways.',
+];
+
+const EVALUATION_CRITERIA = [
+  'Un mínimo de 3 contribuciones al mes en el canal de Telegram.',
+  'Haber sido miembro de la comunidad durante al menos 3 meses.',
+  'Haber participado como speaker en público, de forma virtual o presencial.',
+  'Haber creado contenido como blogs, videos u otros recursos sobre cualquier tecnología de TI.',
 ];
 
 const STANDARDS = [
@@ -80,6 +97,17 @@ const LeaderStandardsPage = () => (
           ))}
         </ul>
       </Reveal>
+      <Reveal className="standards-card standards-card--benefits" delay={60}>
+        <span className="standards-card-icon" aria-hidden="true">
+          <FaGift />
+        </span>
+        <h3>Beneficios del rol</h3>
+        <ul>
+          {BENEFITS.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      </Reveal>
       {STANDARDS.map(({ Icon, title, items }, index) => (
         <Reveal key={title} className="standards-card" delay={index * 70}>
           <span className="standards-card-icon" aria-hidden="true">
@@ -93,6 +121,20 @@ const LeaderStandardsPage = () => (
           </ul>
         </Reveal>
       ))}
+      <Reveal className="standards-card standards-card--evaluation">
+        <span className="standards-card-icon" aria-hidden="true">
+          <FaClipboardCheck />
+        </span>
+        <h3>Criterios de evaluación</h3>
+        <p className="standards-card-note">
+          Al revisar tu aplicación, el equipo organizador toma en cuenta:
+        </p>
+        <ul>
+          {EVALUATION_CRITERIA.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      </Reveal>
     </div>
     <div className="section-cta">
       <p className="section-cta-text">¿Cumples los requisitos y aceptas los estándares?</p>

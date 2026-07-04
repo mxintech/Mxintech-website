@@ -2858,3 +2858,44 @@ main {
   border: 1px solid var(--border-subtle);
   color: var(--mx-pink);
 }
+
+/* Benefits: green-accented featured card (what leaders receive) */
+.standards-card--benefits {
+  grid-column: 1 / -1;
+  border: 2px solid color-mix(in srgb, var(--mx-green) 45%, transparent);
+}
+
+.standards-card--benefits .standards-card-icon {
+  background: color-mix(in srgb, var(--mx-green) 14%, #ffffff);
+  color: color-mix(in srgb, var(--mx-green) 70%, black);
+}
+
+/* Evaluation criteria: blue-accented full-width card before the CTA */
+.standards-card--evaluation {
+  grid-column: 1 / -1;
+  border: 2px solid color-mix(in srgb, var(--mx-blue) 35%, transparent);
+}
+
+.standards-card-note {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--p-text);
+}
+
+[data-theme="dark"] .standards-card--benefits {
+  border: 2px solid rgba(99, 206, 54, 0.4);
+}
+
+[data-theme="dark"] .standards-card--benefits .standards-card-icon {
+  background: rgba(99, 206, 54, 0.16);
+  border: 1px solid var(--border-subtle);
+  color: var(--mx-green);
+}
+
+[data-theme="dark"] .standards-card--evaluation {
+  border: 2px solid rgba(var(--mx-cyan-rgb), 0.35);
+}
+
+[data-theme="dark"] .standards-card--evaluation .standards-card-icon {
+  color: var(--mx-cyan);
+}
