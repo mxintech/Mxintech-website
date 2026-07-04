@@ -19,6 +19,7 @@ const renderForm = (contactType) => {
         contactType={contactType}
         formConfig={config.form}
         wizardConfig={config.wizard}
+        requirements={config.requirements}
       />
     </MemoryRouter>
   );
@@ -107,7 +108,7 @@ describe('ContactForm wizard', () => {
 
     await user.click(screen.getByRole('button', { name: /organizar eventos/i }));
     await user.click(screen.getByRole('button', { name: /continuar/i }));
-    expect(screen.getByText('Paso 2 de 3')).toBeInTheDocument();
+    expect(screen.getByText('Paso 2 de 4')).toBeInTheDocument();
 
     /* Back returns to the chips with the selection kept */
     await user.click(screen.getByRole('button', { name: /atrás/i }));
@@ -115,6 +116,42 @@ describe('ContactForm wizard', () => {
       'aria-pressed',
       'true'
     );
+  });
+
+  it('requires leaders to confirm every requirement before contact', async () => {
+    const user = userEvent.setup();
+    renderForm('leader');
+
+    await user.click(screen.getByRole('button', { name: /organizar eventos/i }));
+    await user.click(screen.getByRole('button', { name: /continuar/i }));
+    await user.type(
+      screen.getByPlaceholderText(CONTACT_FORMS.leader.form.messagePlaceholder),
+      'Quiero organizar meetups.'
+    );
+    await user.click(screen.getByRole('button', { name: /continuar/i }));
+
+    /* Requirements step: all checkboxes must be confirmed */
+    expect(screen.getByText('Paso 3 de 4')).toBeInTheDocument();
+    const checkboxes = screen.getAllByRole('checkbox');
+    expect(checkboxes).toHaveLength(CONTACT_FORMS.leader.requirements.items.length);
+
+    await user.click(screen.getByRole('button', { name: /continuar/i }));
+    expect(screen.getByRole('alert')).toHaveTextContent(/confirma todos los requisitos/i);
+
+    for (const checkbox of checkboxes) {
+      await user.click(checkbox);
+    }
+    await user.click(screen.getByRole('button', { name: /continuar/i }));
+    expect(screen.getByText('Paso 4 de 4')).toBeInTheDocument();
+
+    /* Full submit records the confirmation in the message payload */
+    await user.type(screen.getByLabelText(/nombre completo/i), 'Ana López');
+    await user.type(screen.getByLabelText(/correo electrónico/i), 'ana@example.com');
+    await user.click(
+      screen.getByRole('button', { name: CONTACT_FORMS.leader.form.submitLabel })
+    );
+    const payload = JSON.parse(global.fetch.mock.calls[0][1].body);
+    expect(payload.message).toContain('Requisitos del rol confirmados');
   });
 
   it('shows API errors without leaving the contact step', async () => {

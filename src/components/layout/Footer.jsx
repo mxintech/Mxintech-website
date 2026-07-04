@@ -6,6 +6,7 @@ import {
   FaYoutube,
   FaTiktok,
   FaTwitch,
+  FaTelegram,
   FaBook,
   FaMapPin,
   FaUserPlus,
@@ -25,6 +26,7 @@ const SOCIAL_ICONS = [
   { href: SOCIAL_LINKS.x, label: 'X (Twitter)', Icon: FaTwitter },
   { href: SOCIAL_LINKS.tiktok, label: 'TikTok', Icon: FaTiktok },
   { href: SOCIAL_LINKS.twitch, label: 'Twitch', Icon: FaTwitch },
+  { href: SOCIAL_LINKS.telegram, label: 'Telegram', Icon: FaTelegram },
 ];
 
 const FOOTER_LINKS = [

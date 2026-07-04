@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   FaUser,
   FaEnvelope,
@@ -12,6 +13,7 @@ import {
   FaCheck,
   FaCheckCircle,
   FaYoutube,
+  FaExternalLinkAlt,
 } from 'react-icons/fa';
 import { SiMeetup } from 'react-icons/si';
 import TurnstileWidget, { turnstileEnabled } from './components/TurnstileWidget';
@@ -70,7 +72,7 @@ const apiFetch = async (path, body) => {
 };
 
 /** Assemble the wizard steps for a persona from its config. */
-const buildSteps = (formConfig, wizard) => {
+const buildSteps = (formConfig, wizard, requirements) => {
   const steps = [];
   if (formConfig?.showTalkTitle) {
     steps.push({ type: 'talkTitle' });
@@ -79,14 +81,17 @@ const buildSteps = (formConfig, wizard) => {
     steps.push({ type: 'choice' });
   }
   steps.push({ type: 'message' });
+  if (requirements?.items?.length) {
+    steps.push({ type: 'requirements' });
+  }
   steps.push({ type: 'contact' });
   return steps;
 };
 
-const ContactForm = ({ contactType, formConfig, wizardConfig }) => {
+const ContactForm = ({ contactType, formConfig, wizardConfig, requirements }) => {
   const requiresTurnstile = turnstileEnabled();
   const wizard = wizardConfig || {};
-  const steps = buildSteps(formConfig, wizard);
+  const steps = buildSteps(formConfig, wizard, requirements);
   const totalSteps = steps.length;
 
   const stepRef = useRef(null);
@@ -101,6 +106,7 @@ const ContactForm = ({ contactType, formConfig, wizardConfig }) => {
     message: '',
   });
   const [choices, setChoices] = useState([]);
+  const [confirmedReqs, setConfirmedReqs] = useState([]);
   const [verificationCode, setVerificationCode] = useState('');
   const [turnstileToken, setTurnstileToken] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -132,11 +138,27 @@ const ContactForm = ({ contactType, formConfig, wizardConfig }) => {
     clearError();
   };
 
-  /** Message sent to the API: chip selections become a labeled prefix line. */
+  const toggleRequirement = (id) => {
+    setConfirmedReqs((prev) =>
+      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
+    );
+    clearError();
+  };
+
+  /** Message sent to the API: chip selections become a labeled prefix line and
+      requirement confirmations a trailing note, so the team inbox records both. */
   const composedMessage = () => {
     const clean = sanitizeField(formData.message);
-    if (!choices.length || !wizard.choice) return clean;
-    return `${wizard.choice.messageLabel}: ${choices.join(', ')}\n\n${clean}`;
+    const prefix =
+      choices.length && wizard.choice
+        ? `${wizard.choice.messageLabel}: ${choices.join(', ')}\n\n`
+        : '';
+    const suffix =
+      requirements?.items?.length &&
+      requirements.items.every(({ id }) => confirmedReqs.includes(id))
+        ? '\n\nRequisitos del rol confirmados por la persona aplicante.'
+        : '';
+    return `${prefix}${clean}${suffix}`;
   };
 
   const validateStep = (step) => {
@@ -157,6 +179,11 @@ const ContactForm = ({ contactType, formConfig, wizardConfig }) => {
         const value = sanitizeField(formData.message);
         if (!value) return 'Cuéntanos un poco más — este campo es requerido';
         if (value.length > LIMITS.message) return 'El mensaje es demasiado largo';
+        return null;
+      }
+      case 'requirements': {
+        const missing = requirements.items.some(({ id }) => !confirmedReqs.includes(id));
+        if (missing) return 'Confirma todos los requisitos para continuar';
         return null;
       }
       case 'contact':
@@ -288,6 +315,7 @@ const ContactForm = ({ contactType, formConfig, wizardConfig }) => {
   const startOver = () => {
     setFormData({ name: '', email: '', mobile: '', talkTitle: '', message: '' });
     setChoices([]);
+    setConfirmedReqs([]);
     setVerificationCode('');
     setTurnstileToken('');
     setStepIndex(0);
@@ -499,6 +527,55 @@ const ContactForm = ({ contactType, formConfig, wizardConfig }) => {
                 disabled={isSubmitting}
               />
             </div>
+          </>
+        );
+      case 'requirements':
+        return (
+          <>
+            {requirements.confirmLead && <p className="cw-lead">{requirements.confirmLead}</p>}
+            <h4 className="cw-step-title">
+              {requirements.confirmTitle || 'Confirma los requisitos'}
+            </h4>
+            <ul className="cw-reqs">
+              {requirements.items.map(({ id, confirm, href, hrefLabel }) => {
+                const checked = confirmedReqs.includes(id);
+                const inputId = `req-${contactType}-${id}`;
+                const external = href && /^https?:\/\//.test(href);
+                return (
+                  <li key={id} className={`cw-req ${checked ? 'cw-req--checked' : ''}`}>
+                    <input
+                      type="checkbox"
+                      id={inputId}
+                      checked={checked}
+                      onChange={() => toggleRequirement(id)}
+                      disabled={isSubmitting}
+                    />
+                    <label htmlFor={inputId}>
+                      {confirm}
+                      {href && (
+                        <>
+                          {' '}
+                          {external ? (
+                            <a
+                              href={href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="cw-req-link"
+                            >
+                              {hrefLabel} <FaExternalLinkAlt aria-hidden />
+                            </a>
+                          ) : (
+                            <Link to={href} className="cw-req-link">
+                              {hrefLabel}
+                            </Link>
+                          )}
+                        </>
+                      )}
+                    </label>
+                  </li>
+                );
+              })}
+            </ul>
           </>
         );
       case 'contact':

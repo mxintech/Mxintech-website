@@ -56,6 +56,19 @@ describe('App', () => {
     expect(screen.getByText(/¿De qué te gustaría hablar\?/)).toBeInTheDocument();
   });
 
+  it('renders the leader standards page', () => {
+    renderAt('/lideres/estandares');
+    expect(
+      screen.getByRole('heading', { name: /estándares de líderes/i })
+    ).toBeInTheDocument();
+    expect(screen.getByText(/respeto e inclusión/i)).toBeInTheDocument();
+    expect(screen.getByText(/vigencia del rol/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /aplica para ser líder/i })).toHaveAttribute(
+      'href',
+      '/contact/leader'
+    );
+  });
+
   it('shows the 404 page for unknown routes', () => {
     renderAt('/esta-ruta-no-existe');
     expect(screen.getByText('404')).toBeInTheDocument();

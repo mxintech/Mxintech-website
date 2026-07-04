@@ -5,6 +5,7 @@ export const SOCIAL_LINKS = {
   x: 'https://x.com/mxintech',
   tiktok: 'https://www.tiktok.com/@mxintech',
   twitch: 'https://www.twitch.tv/mxintech',
+  telegram: 'https://t.me/mxintech',
   meetup: 'https://www.meetup.com/aws-user-group-tlaxcala/',
 };
 

@@ -8,6 +8,7 @@ import Footer from './components/layout/Footer';
 import ContactPageLayout from './components/ContactPageLayout';
 import HomePage from './pages/HomePage';
 import CursosPage from './pages/CursosPage';
+import LeaderStandardsPage from './pages/LeaderStandardsPage';
 import NotFoundPage from './pages/NotFoundPage';
 import { useTheme } from './hooks/useTheme';
 import { usePageMeta } from './hooks/usePageMeta';
@@ -73,6 +74,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/cursos" element={<CursosPage />} />
+          <Route path="/lideres/estandares" element={<LeaderStandardsPage />} />
           <Route path="/contact" element={<Navigate to="/contact/member" replace />} />
           <Route path="/contact/member" element={<ContactPageLayout contactType="member" />} />
           <Route path="/contact/leader" element={<ContactPageLayout contactType="leader" />} />

@@ -1,4 +1,5 @@
 import { BRAND } from './brand';
+import { SOCIAL_LINKS } from './social';
 import {
   FaUserPlus,
   FaUserTie,
@@ -147,6 +148,39 @@ export const CONTACT_FORMS = {
       },
       messageLead: '¡Eso es actitud! Cuéntanos un poco de ti y de tu experiencia.',
       contactLead: 'Último paso: ¿cómo te contactamos para darte la bienvenida al equipo?',
+    },
+    /* Eligibility bar for the leader role (CNCF-ambassador style):
+       shown as a checklist on the page and confirmed step by step in the wizard. */
+    requirements: {
+      title: 'Requisitos para ser líder',
+      confirmTitle: 'Confirma que cumples los requisitos',
+      confirmLead: 'Ser líder es un rol de confianza — revisa que cumples con esto:',
+      items: [
+        {
+          id: 'membership',
+          text: 'Llevar al menos 3 meses como miembro de la comunidad',
+          confirm: 'Llevo al menos 3 meses como miembro de la comunidad',
+        },
+        {
+          id: 'posts',
+          text: 'Haber compartido al menos 3 publicaciones tech en el canal de Telegram',
+          confirm: 'He compartido al menos 3 publicaciones tech en el canal de Telegram',
+          href: SOCIAL_LINKS.telegram,
+          hrefLabel: 'Abrir el canal de Telegram',
+        },
+        {
+          id: 'age',
+          text: 'Tener al menos 18 años',
+          confirm: 'Tengo 18 años o más',
+        },
+        {
+          id: 'standards',
+          text: 'Aceptar los Estándares de Líderes',
+          confirm: 'Leí y acepto los Estándares de Líderes',
+          href: '/lideres/estandares',
+          hrefLabel: 'Leer los estándares',
+        },
+      ],
     },
   },
   speaker: {

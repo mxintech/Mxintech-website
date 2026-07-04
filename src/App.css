@@ -2686,3 +2686,154 @@ main {
 [data-theme="dark"] .acercade-metric-value {
   color: #fff;
 }
+
+/* ============================================================
+   Leader requirements checklist (contact hero) + standards page
+   ============================================================ */
+
+.contact-requirements {
+  margin-top: 1rem;
+  padding: 0.95rem 1.05rem;
+  border-radius: 14px;
+  text-align: left;
+  background: color-mix(in srgb, var(--contact-accent, var(--mx-blue)) 6%, #ffffff);
+  border: 1px dashed color-mix(in srgb, var(--contact-accent, var(--mx-blue)) 35%, transparent);
+}
+
+.contact-requirements-title {
+  margin: 0 0 0.6rem;
+  font-size: 1rem;
+  color: var(--heading);
+}
+
+.contact-requirements-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.contact-requirement {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.55rem;
+  align-items: start;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--p-text);
+}
+
+.contact-requirement-icon {
+  color: var(--contact-accent, var(--mx-blue));
+  margin-top: 0.15rem;
+  flex-shrink: 0;
+}
+
+.contact-req-link {
+  color: var(--contact-accent, var(--mx-blue));
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.contact-req-link svg {
+  font-size: 0.7em;
+}
+
+[data-theme="dark"] .contact-requirements {
+  background: rgba(var(--mx-blue-rgb), 0.18);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .contact-req-link {
+  color: var(--mx-cyan);
+}
+
+/* Estándares de Líderes page */
+.standards-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(1rem, 2.5vh, 1.75rem);
+  padding: clamp(1rem, 3vw, 2rem);
+}
+
+.standards-header {
+  max-width: 60ch;
+  margin: 0 auto;
+}
+
+.standards-intro {
+  margin: 0;
+  font-size: clamp(0.95rem, 1.5vw, 1.08rem);
+  line-height: 1.65;
+  color: var(--p-text);
+}
+
+.standards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0.85rem;
+}
+
+.standards-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  text-align: left;
+  padding: 1.1rem 1.2rem;
+  border-radius: 14px;
+  background: var(--card-bg, #fff);
+  border: 1px solid rgba(var(--mx-blue-rgb), 0.1);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+}
+
+.standards-card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--mx-blue) 12%, #ffffff);
+  color: var(--mx-blue);
+}
+
+.standards-card h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--heading);
+}
+
+.standards-card ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--p-text);
+}
+
+[data-theme="dark"] .standards-card {
+  background-color: rgba(var(--mx-blue-night-deep-rgb), 0.42);
+  background-image: linear-gradient(
+    150deg,
+    rgba(var(--mx-blue-rgb), 0.2) 0%,
+    rgba(var(--mx-blue-night-deep-rgb), 0.48) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .standards-card-icon {
+  background: rgba(var(--mx-blue-rgb), 0.3);
+  border: 1px solid var(--border-subtle);
+  color: var(--mx-cyan);
+}

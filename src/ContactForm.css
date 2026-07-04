@@ -508,3 +508,74 @@
   color: #fff;
   border-color: rgba(255, 255, 255, 0.25);
 }
+
+/* Requirements confirmation step */
+.cw-reqs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.cw-req {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.6rem;
+  align-items: start;
+  padding: 0.65rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid rgba(var(--mx-blue-rgb), 0.18);
+  background: var(--card-bg, #fff);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.cw-req--checked {
+  border-color: var(--contact-accent, var(--mx-pink));
+  background: color-mix(in srgb, var(--contact-accent, var(--mx-pink)) 7%, #ffffff);
+}
+
+.cw-req input[type="checkbox"] {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.15rem;
+  accent-color: var(--contact-accent, var(--mx-pink));
+  cursor: pointer;
+}
+
+.cw-req label {
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: var(--p-text);
+  cursor: pointer;
+  text-align: left;
+  margin: 0;
+  font-weight: 500;
+}
+
+.cw-req-link {
+  color: var(--contact-accent, var(--mx-pink));
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  white-space: nowrap;
+}
+
+.cw-req-link svg {
+  font-size: 0.7em;
+}
+
+[data-theme="dark"] .cw-req {
+  background: rgba(var(--mx-blue-night-deep-rgb), 0.6);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+[data-theme="dark"] .cw-req--checked {
+  border-color: var(--mx-pink);
+  background: rgba(var(--mx-pink-rgb), 0.14);
+}
+
+[data-theme="dark"] .cw-req-link {
+  color: var(--mx-cyan);
+}

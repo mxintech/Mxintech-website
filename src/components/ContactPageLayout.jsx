@@ -1,6 +1,24 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { FaCheckCircle, FaExternalLinkAlt } from 'react-icons/fa';
 import ContactForm from '../ContactForm';
 import { getContactFormConfig } from '../config/contactForms';
+
+const RequirementLink = ({ href, label }) => {
+  const external = /^https?:\/\//.test(href);
+  if (external) {
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer" className="contact-req-link">
+        {label} <FaExternalLinkAlt aria-hidden />
+      </a>
+    );
+  }
+  return (
+    <Link to={href} className="contact-req-link">
+      {label}
+    </Link>
+  );
+};
 
 const ContactPageLayout = ({ contactType }) => {
   const config = getContactFormConfig(contactType);
@@ -52,6 +70,27 @@ const ContactPageLayout = ({ contactType }) => {
               </li>
             ))}
           </ul>
+          {config.requirements && (
+            <div className="contact-requirements">
+              <h3 className="contact-requirements-title">{config.requirements.title}</h3>
+              <ul className="contact-requirements-list">
+                {config.requirements.items.map(({ id, text, href, hrefLabel }) => (
+                  <li key={id} className="contact-requirement">
+                    <FaCheckCircle className="contact-requirement-icon" aria-hidden />
+                    <span>
+                      {text}
+                      {href && (
+                        <>
+                          {' — '}
+                          <RequirementLink href={href} label={hrefLabel} />
+                        </>
+                      )}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         <div className="contact-form-panel contact-animate contact-animate-2">
@@ -59,6 +98,7 @@ const ContactPageLayout = ({ contactType }) => {
             contactType={contactType}
             formConfig={config.form}
             wizardConfig={config.wizard}
+            requirements={config.requirements}
           />
         </div>
       </div>

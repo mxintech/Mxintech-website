@@ -38,6 +38,11 @@ export const PAGE_META = {
     description:
       'Contribuye activamente a México in Tech: organiza eventos, genera contenido, difunde la comunidad y ayuda a hacerla crecer.',
   },
+  '/lideres/estandares': {
+    title: 'Estándares de Líderes | México in Tech',
+    description:
+      'Lo que la comunidad espera de sus líderes: respeto, compromiso, representación honesta y participación activa en México in Tech.',
+  },
   '/contact/speaker': {
     title: 'Sé un speaker | México in Tech',
     description:

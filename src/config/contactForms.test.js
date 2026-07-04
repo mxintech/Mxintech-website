@@ -42,6 +42,22 @@ describe('contact form config integrity', () => {
     }
   });
 
+  it('leader defines the eligibility requirements', () => {
+    const { requirements } = CONTACT_FORMS.leader;
+    expect(requirements.title).toBeTruthy();
+    expect(requirements.items).toHaveLength(4);
+    const ids = requirements.items.map((r) => r.id);
+    expect(ids).toEqual(['membership', 'posts', 'age', 'standards']);
+    requirements.items.forEach(({ text, confirm }) => {
+      expect(text).toBeTruthy();
+      expect(confirm).toBeTruthy();
+    });
+    const standards = requirements.items.find((r) => r.id === 'standards');
+    expect(standards.href).toBe('/lideres/estandares');
+    const posts = requirements.items.find((r) => r.id === 'posts');
+    expect(posts.href).toBe('https://t.me/mxintech');
+  });
+
   it('speaker leads with the talk title step', () => {
     expect(CONTACT_FORMS.speaker.form.showTalkTitle).toBe(true);
     expect(CONTACT_FORMS.speaker.wizard.talkTitle.title).toBeTruthy();
