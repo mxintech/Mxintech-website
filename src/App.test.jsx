@@ -61,6 +61,10 @@ describe('App', () => {
     expect(
       screen.getByRole('heading', { name: /estándares de líderes/i })
     ).toBeInTheDocument();
+    expect(screen.getByText(/responsabilidades del rol/i)).toBeInTheDocument();
+    expect(screen.getByText(/ser amable/i)).toBeInTheDocument();
+    expect(screen.getByText(/atraer a nuevos miembros/i)).toBeInTheDocument();
+    expect(screen.getByText(/blogs, tutoriales, videos, charlas/i)).toBeInTheDocument();
     expect(screen.getByText(/respeto e inclusión/i)).toBeInTheDocument();
     expect(screen.getByText(/vigencia del rol/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /aplica para ser líder/i })).toHaveAttribute(

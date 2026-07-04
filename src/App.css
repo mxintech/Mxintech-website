@@ -2837,3 +2837,24 @@ main {
   border: 1px solid var(--border-subtle);
   color: var(--mx-cyan);
 }
+
+/* Responsibilities: featured full-width card leading the standards grid */
+.standards-card--featured {
+  grid-column: 1 / -1;
+  border: 2px solid color-mix(in srgb, var(--mx-pink) 45%, transparent);
+}
+
+.standards-card--featured .standards-card-icon {
+  background: color-mix(in srgb, var(--mx-pink) 12%, #ffffff);
+  color: var(--mx-pink);
+}
+
+[data-theme="dark"] .standards-card--featured {
+  border: 2px solid rgba(var(--mx-pink-rgb), 0.45);
+}
+
+[data-theme="dark"] .standards-card--featured .standards-card-icon {
+  background: rgba(var(--mx-pink-rgb), 0.2);
+  border: 1px solid var(--border-subtle);
+  color: var(--mx-pink);
+}

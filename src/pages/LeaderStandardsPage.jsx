@@ -5,8 +5,17 @@ import {
   FaBullhorn,
   FaBalanceScale,
   FaUserTie,
+  FaHeart,
 } from 'react-icons/fa';
 import Reveal from '../components/Reveal';
+
+const RESPONSIBILITIES = [
+  'Ser amable — la amabilidad va primero, siempre.',
+  'Involucrar y empoderar a la comunidad para que participe y crezca.',
+  'Mejorar la experiencia de quienes ya son miembros.',
+  'Atraer a nuevos miembros y darles una bienvenida que los haga quedarse.',
+  'Promover tecnologías con blogs, tutoriales, videos, charlas y más dentro de la comunidad.',
+];
 
 const STANDARDS = [
   {
@@ -60,6 +69,17 @@ const LeaderStandardsPage = () => (
       </div>
     </Reveal>
     <div className="standards-grid">
+      <Reveal className="standards-card standards-card--featured">
+        <span className="standards-card-icon" aria-hidden="true">
+          <FaHeart />
+        </span>
+        <h3>Responsabilidades del rol</h3>
+        <ul>
+          {RESPONSIBILITIES.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      </Reveal>
       {STANDARDS.map(({ Icon, title, items }, index) => (
         <Reveal key={title} className="standards-card" delay={index * 70}>
           <span className="standards-card-icon" aria-hidden="true">
