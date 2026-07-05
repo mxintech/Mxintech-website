@@ -17,7 +17,6 @@ const NAV_SECTIONS = [
   { href: '/#acercade', label: 'Acerca de', Icon: FaInfoCircle },
   { href: '/#video', label: 'Webinars', Icon: FaVideo },
   { href: '/#eventos', label: 'Eventos', Icon: FaCalendarAlt },
-  { href: '/#universidades', label: 'Universidades', Icon: FaGraduationCap },
 ];
 
 const Header = () => {
@@ -66,6 +65,12 @@ const Header = () => {
                   </a>
                 </li>
               ))}
+              <li>
+                <Link to="/universidades" onClick={closeMenu} className="nav-link-item">
+                  <FaGraduationCap className="nav-link-icon" aria-hidden />
+                  <span>Universidades</span>
+                </Link>
+              </li>
               <li>
                 <Link to="/cursos" onClick={closeMenu} className="nav-link-item">
                   <FaBook className="nav-link-icon" aria-hidden />

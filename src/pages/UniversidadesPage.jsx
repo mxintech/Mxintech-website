@@ -29,8 +29,8 @@ const UNI_BENEFITS = [
   },
 ];
 
-const UniversidadesSection = () => (
-  <section id="universidades" className="section universidades-section">
+const UniversidadesPage = () => (
+  <section className="section universidades-section">
     <h2>Universidades</h2>
     <div className="universidades-layout">
       <img
@@ -81,4 +81,4 @@ const UniversidadesSection = () => (
   </section>
 );
 
-export default UniversidadesSection;
+export default UniversidadesPage;

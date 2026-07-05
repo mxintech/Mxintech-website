@@ -28,6 +28,11 @@ export const PAGE_META = {
     description:
       'Cursos de AWS, Linux y tecnología cloud en México in Tech. Aprende con la comunidad tech del AWS User Group Tlaxcala.',
   },
+  '/universidades': {
+    title: 'Universidades | México in Tech',
+    description:
+      'Colaboramos con universidades de Tlaxcala para acercar cloud, IA y prácticas de la industria a estudiantes y docentes. Forma líderes y llega con confianza a tu primer empleo.',
+  },
   '/contact/member': {
     title: 'Únete como miembro | México in Tech',
     description:

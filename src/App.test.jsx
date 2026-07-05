@@ -33,8 +33,14 @@ describe('App', () => {
     expect(screen.getByText('AWS Community Day 2025')).toBeInTheDocument();
   });
 
-  it('renders the universidades section with benefits and CTAs', () => {
+  it('keeps universidades off the home page', () => {
     renderAt('/');
+    expect(screen.queryByRole('heading', { name: 'Universidades' })).not.toBeInTheDocument();
+    expect(screen.queryByText('Forma líderes')).not.toBeInTheDocument();
+  });
+
+  it('renders the universidades page with benefits and CTAs', () => {
+    renderAt('/universidades');
     expect(screen.getByRole('heading', { name: 'Universidades' })).toBeInTheDocument();
     expect(screen.getByText(/en tlaxcala ese ecosistema apenas está naciendo/i)).toBeInTheDocument();
     expect(screen.getByText('Forma líderes')).toBeInTheDocument();
