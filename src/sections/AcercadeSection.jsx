@@ -10,7 +10,6 @@ import {
   FaHandshake,
 } from 'react-icons/fa';
 import mascota from '../assets/mascota.png';
-import { WEBINARS } from '../config/content';
 import {
   COMMUNITY_METRICS,
   totalSocialFollowers,
@@ -205,7 +204,7 @@ const AcercadeSection = () => {
         </div>
         <div className="acercade-metric">
           <FaVideo className="acercade-metric-icon" aria-hidden />
-          <p className="acercade-metric-value">{WEBINARS.length}</p>
+          <p className="acercade-metric-value">{COMMUNITY_METRICS.webinarsRecorded}</p>
           <p className="acercade-metric-label">webinars grabados</p>
           <p className="acercade-metric-detail">disponibles en YouTube</p>
         </div>

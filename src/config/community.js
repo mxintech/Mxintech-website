@@ -6,6 +6,9 @@
  */
 export const COMMUNITY_METRICS = {
   asOf: '2026-07-04',
+  /* Total recorded webinars on the YouTube channel (not just the featured
+     cards in config/content.js). */
+  webinarsRecorded: 60,
   socials: [
     { network: 'YouTube', count: 485 },
     { network: 'LinkedIn', count: 173 },

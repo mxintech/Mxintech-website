@@ -6,6 +6,10 @@ import {
 } from './community';
 
 describe('community metrics config', () => {
+  it('tracks the total recorded webinars, beyond the featured cards', () => {
+    expect(COMMUNITY_METRICS.webinarsRecorded).toBe(60);
+  });
+
   it('has a fresh-data marker and positive counts per network', () => {
     expect(COMMUNITY_METRICS.asOf).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(COMMUNITY_METRICS.socials.length).toBeGreaterThanOrEqual(3);

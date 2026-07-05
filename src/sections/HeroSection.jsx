@@ -2,12 +2,12 @@ import { Link } from 'react-router-dom';
 import { FaAws, FaVideo, FaUsers } from 'react-icons/fa';
 import Slider from '../Slider';
 import ajolote from '../assets/ajolote.png';
-import { WEBINARS } from '../config/content';
+import { COMMUNITY_METRICS } from '../config/community';
 
 /* Social proof: only verifiable facts derived from site content/config. */
 const PROOF_BADGES = [
   { Icon: FaAws, text: 'AWS User Group oficial' },
-  { Icon: FaVideo, text: `${WEBINARS.length}+ webinars grabados` },
+  { Icon: FaVideo, text: `${COMMUNITY_METRICS.webinarsRecorded}+ webinars grabados` },
   { Icon: FaUsers, text: 'Eventos presenciales y en línea' },
 ];
 
